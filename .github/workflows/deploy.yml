@@ -1,0 +1,99 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.x
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Prepare runtime dirs
+        run: mkdir -p .data public/graph public/og
+
+      - name: Build index (entity + embeddings)
+        run: |
+          if [ -n "${OPENAI_API_KEY:-}" ]; then
+            bun run build-index
+          else
+            echo "::warning::OPENAI_API_KEY missing — running build-index with --skip-embed"
+            bun run build-index -- --skip-embed
+          fi
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+      - name: Generate Q&A (skip if claude CLI unavailable)
+        run: |
+          if command -v claude >/dev/null 2>&1; then
+            bun run generate-qa
+          else
+            echo "::warning::claude CLI unavailable — skipping Q&A generation"
+          fi
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+      - name: Export graph
+        run: bun run export-graph
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+      - name: Build notes manifest
+        run: bun run build-manifest
+
+      - name: Build OG images (skip if script missing)
+        run: |
+          if [ -f scripts/build-og.ts ]; then
+            bun run build-og
+          fi
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Build RSS feed (skip if script missing)
+        run: |
+          if [ -f scripts/build-rss.ts ]; then
+            bun run build-rss
+          fi
+
+      - name: Astro build
+        run: bun run build
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

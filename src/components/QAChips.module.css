@@ -1,0 +1,217 @@
+/* QAChips.module.css — blog-bw qa-card aesthetics
+ * Maps TSX classNames to SPEC §3 tokens. No hex literals. No --meshblog-*.
+ */
+
+/* ── Search input ─────────────────────────────────────────────────────────── */
+
+.searchInput {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  font-family: var(--f-sans);
+  font-size: 14px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: var(--r-xs);
+  outline: none;
+  transition: background var(--dur-fast) var(--ease);
+  margin-bottom: 18px;
+}
+
+.searchInput::placeholder {
+  color: var(--ink-4);
+}
+
+.searchInput:focus {
+  background: var(--paper-2);
+}
+
+.searchInput:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── Card list ────────────────────────────────────────────────────────────── */
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Individual card (li) ─────────────────────────────────────────────────── */
+
+.card {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  cursor: pointer;
+}
+
+.card:last-child {
+  border-bottom: 0;
+}
+
+/* ── Question button ──────────────────────────────────────────────────────── */
+
+.questionBtn {
+  display: flex;
+  width: 100%;
+  text-align: left;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--f-serif);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+.questionBtn::after {
+  content: "+";
+  font-family: var(--f-mono);
+  font-size: 16px;
+  color: var(--ink-3);
+  line-height: 1;
+  font-weight: 300;
+  flex-shrink: 0;
+}
+
+/* When card is open, questionBtn shows minus — handled by .cardOpen in TSX
+   but TSX uses aria-expanded; we style the ::after via :has or the open class */
+
+.cardOpen .questionBtn::after {
+  content: "−";
+}
+
+.questionBtn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── Tier badge (<small>) ─────────────────────────────────────────────────── */
+
+.tierBadge {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  display: inline-block;
+  line-height: 1.6;
+  border: 1px solid var(--ink-5);
+  color: var(--ink-3);
+  margin-left: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ── Answer region ────────────────────────────────────────────────────────── */
+
+.answerRegion {
+  margin-top: 10px;
+  padding-left: 14px;
+  border-left: 3px solid var(--ink);
+}
+
+.answerText {
+  font-family: var(--f-serif);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+.answerClamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Expand toggle button ─────────────────────────────────────────────────── */
+
+.expandBtn {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  letter-spacing: 0.04em;
+}
+
+.expandBtn:hover {
+  color: var(--ink);
+}
+
+.expandBtn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── Empty / no-results ───────────────────────────────────────────────────── */
+
+.noResults {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--ink-3);
+  font-family: var(--f-serif);
+  font-size: var(--fs-sm);
+  font-style: italic;
+}
+
+/* ── Fallback (related links) ─────────────────────────────────────────────── */
+
+.fallback {
+  margin-top: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}
+
+.fallbackLabel {
+  margin: 0 0 var(--space-3) 0;
+  color: var(--ink-3);
+  font-size: var(--fs-sm);
+  font-family: var(--f-serif);
+}
+
+.relatedList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.relatedList li::before {
+  content: "→ ";
+  color: var(--ink-3);
+  font-family: var(--f-mono);
+}
+
+.relatedList a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 1px;
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.relatedList a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}

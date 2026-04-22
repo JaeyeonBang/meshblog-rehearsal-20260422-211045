@@ -1,0 +1,1279 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>meshblog — design system</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;0,7..72,700;1,7..72,400&family=Pretendard:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   meshblog — monochrome neumorphic tokens
+   모든 값은 :root 에서 한번에 정의됩니다. 
+   JSON 테마 주입 시 이 변수들만 교체되며 전체 사이트 스타일이 바뀝니다.
+   ============================================================ */
+:root {
+  /* Base — 따뜻한 종이톤의 매우 옅은 회색 (흑백 톤) */
+  --hue: 60;                         /* 거의 0에 가까운 warm trace */
+  --surface:        oklch(0.930 0.003 var(--hue));  /* 카드/패널 표면 = 바탕과 동색 */
+  --surface-elev:   oklch(0.955 0.003 var(--hue));  /* 살짝 떠오른 표면 */
+  --surface-sunk:   oklch(0.905 0.003 var(--hue));  /* 가라앉은 표면 (코드블록 등) */
+  --bg:             oklch(0.930 0.003 var(--hue));  /* 페이지 배경 = surface (뉴모피즘 원칙) */
+
+  --ink:            oklch(0.220 0.005 var(--hue));
+  --ink-2:          oklch(0.360 0.005 var(--hue));
+  --ink-3:          oklch(0.520 0.005 var(--hue));
+  --ink-4:          oklch(0.680 0.005 var(--hue));  /* 아주 흐린 회색 (placeholder 등) */
+
+  /* Neumorphic shadow pair — 종이에 각인 / 종이가 부풀음 */
+  --light:          oklch(1.000 0 0 / 0.75);
+  --shade:          oklch(0.650 0.005 var(--hue) / 0.28);
+
+  /* Radii */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+
+  /* Spacing (4-base) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px;
+  --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px; --s-16: 64px;
+
+  /* Elevation — 뉴모피즘 공식.
+     raised: 밖으로 부풀음 (기본 카드/버튼)
+     inset: 안으로 눌림 (active/입력/선택됨)
+     flat: 외곽선 하나로만 (정말 flat한 섹션)
+  */
+  --e-raised-sm: -2px -2px 5px var(--light), 2px 2px 5px var(--shade);
+  --e-raised:    -4px -4px 10px var(--light), 5px 5px 12px var(--shade);
+  --e-raised-lg: -6px -6px 16px var(--light), 8px 8px 20px var(--shade);
+  --e-inset:     inset 3px 3px 6px var(--shade), inset -3px -3px 6px var(--light);
+  --e-inset-sm:  inset 2px 2px 4px var(--shade), inset -2px -2px 4px var(--light);
+  --e-press:     inset 2px 2px 4px var(--shade), inset -1px -1px 3px var(--light);
+
+  /* Typography */
+  --f-serif: 'Literata', 'Pretendard', Georgia, serif;
+  --f-sans:  'Pretendard', -apple-system, system-ui, 'Apple SD Gothic Neo', sans-serif;
+  --f-mono:  'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Motion */
+  --ease: cubic-bezier(.22,1,.36,1);
+  --dur-fast: 140ms;
+  --dur: 240ms;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--f-sans); }
+body { font-size: 15px; line-height: 1.55; }
+
+/* ─── layout shell ───────────────────────────────────────── */
+.ds-shell { max-width: 1200px; margin: 0 auto; padding: 48px 32px 120px; }
+.ds-kicker { font-family: var(--f-mono); font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); }
+.ds-title { font-family: var(--f-serif); font-weight: 600; font-size: clamp(36px, 4vw, 56px); line-height: 1.05; margin: 10px 0 8px; letter-spacing: -.01em; }
+.ds-intro { font-family: var(--f-serif); font-size: 19px; line-height: 1.55; color: var(--ink-2); max-width: 680px; }
+
+.ds-meta-row { display: flex; gap: 32px; margin-top: 40px; flex-wrap: wrap; }
+.ds-meta { font-size: 13px; color: var(--ink-3); }
+.ds-meta b { display: block; font-family: var(--f-mono); color: var(--ink); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 3px; font-weight: 500; }
+
+.ds-section { margin-top: 80px; }
+.ds-section-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 28px; border-bottom: 1px solid oklch(0.82 0.005 var(--hue)); padding-bottom: 12px; }
+.ds-section-head h2 { font-family: var(--f-serif); font-size: 28px; font-weight: 600; margin: 0; letter-spacing: -.005em; }
+.ds-section-head .num { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); letter-spacing: .1em; }
+.ds-section-head .hint { font-size: 13px; color: var(--ink-3); margin-left: auto; font-style: italic; }
+
+.ds-grid { display: grid; gap: 20px; }
+.g-2 { grid-template-columns: repeat(2, 1fr); }
+.g-3 { grid-template-columns: repeat(3, 1fr); }
+.g-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 860px) { .g-2, .g-3, .g-4 { grid-template-columns: 1fr; } }
+
+/* Spec card (설명 + 데모) */
+.spec { background: var(--surface); border-radius: var(--r-md); padding: 24px; box-shadow: var(--e-raised-sm); }
+.spec .name { font-family: var(--f-mono); font-size: 12px; color: var(--ink); font-weight: 500; margin-bottom: 4px; }
+.spec .desc { font-size: 13px; color: var(--ink-3); margin-bottom: 16px; line-height: 1.5; }
+.spec .demo { display: flex; align-items: center; justify-content: center; padding: 24px 16px; min-height: 80px; border-radius: var(--r-sm); background: var(--surface); box-shadow: var(--e-inset-sm); }
+.spec .demo.flat { box-shadow: none; background: transparent; padding: 16px 0; }
+.spec .code { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); margin-top: 12px; padding: 8px 10px; background: var(--surface-sunk); border-radius: var(--r-xs); box-shadow: var(--e-inset-sm); }
+
+/* ============================================================
+   COLOR tokens
+============================================================ */
+.swatch-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+@media (max-width: 860px) { .swatch-row { grid-template-columns: repeat(2, 1fr); } }
+.swatch { padding: 20px; border-radius: var(--r-md); display: flex; flex-direction: column; gap: 6px; min-height: 120px; justify-content: flex-end; box-shadow: var(--e-raised-sm); }
+.swatch .n { font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em; opacity: .85; }
+.swatch .v { font-family: var(--f-mono); font-size: 10px; opacity: .6; }
+.sw-bg { background: var(--bg); color: var(--ink); }
+.sw-surface { background: var(--surface); color: var(--ink); }
+.sw-elev { background: var(--surface-elev); color: var(--ink); }
+.sw-sunk { background: var(--surface-sunk); color: var(--ink); box-shadow: var(--e-inset-sm); }
+.sw-ink { background: var(--ink); color: var(--surface); box-shadow: var(--e-raised-sm); }
+.sw-ink2 { background: var(--ink-2); color: var(--surface); box-shadow: var(--e-raised-sm); }
+.sw-ink3 { background: var(--ink-3); color: var(--surface); box-shadow: var(--e-raised-sm); }
+.sw-ink4 { background: var(--ink-4); color: var(--ink); box-shadow: var(--e-raised-sm); }
+
+/* ============================================================
+   TYPE scale
+============================================================ */
+.type-row { display: flex; align-items: baseline; gap: 24px; padding: 18px 24px; border-radius: var(--r-sm); background: var(--surface); box-shadow: var(--e-raised-sm); margin-bottom: 14px; }
+.type-row .label { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); width: 140px; flex-shrink: 0; letter-spacing: .05em; }
+.type-row .sample { font-family: var(--f-serif); color: var(--ink); flex: 1; }
+.type-row.ui .sample { font-family: var(--f-sans); }
+.type-row.mono .sample { font-family: var(--f-mono); }
+.type-row .size { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); width: 70px; text-align: right; flex-shrink: 0; }
+
+/* ============================================================
+   ELEVATION library
+============================================================ */
+.elev-card { background: var(--surface); border-radius: var(--r-md); padding: 36px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.elev-card .tag { font-family: var(--f-mono); font-size: 11px; color: var(--ink); letter-spacing: .05em; }
+.elev-card .desc { font-size: 12px; color: var(--ink-3); line-height: 1.45; }
+.elev-raised-sm { box-shadow: var(--e-raised-sm); }
+.elev-raised    { box-shadow: var(--e-raised); }
+.elev-raised-lg { box-shadow: var(--e-raised-lg); }
+.elev-inset-sm  { box-shadow: var(--e-inset-sm); }
+.elev-inset     { box-shadow: var(--e-inset); }
+.elev-press     { box-shadow: var(--e-press); }
+
+/* ============================================================
+   BUTTONS
+============================================================ */
+.btn {
+  font-family: var(--f-sans); font-size: 14px; font-weight: 500;
+  padding: 10px 20px; border: 0; cursor: pointer;
+  background: var(--surface); color: var(--ink);
+  border-radius: var(--r-pill);
+  box-shadow: var(--e-raised-sm);
+  transition: box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn:hover { box-shadow: var(--e-raised); }
+.btn:active, .btn.active { box-shadow: var(--e-press); transform: translateY(0); color: var(--ink); }
+.btn.primary { background: var(--ink); color: var(--surface); box-shadow: var(--e-raised-sm), inset 1px 1px 0 oklch(1 0 0 / .08); }
+.btn.primary:hover { box-shadow: var(--e-raised); }
+.btn.primary:active { box-shadow: inset 3px 3px 6px oklch(0 0 0 / .6), inset -1px -1px 2px oklch(1 0 0 / .08); }
+.btn.ghost { background: transparent; box-shadow: none; color: var(--ink-2); }
+.btn.ghost:hover { color: var(--ink); box-shadow: var(--e-raised-sm); background: var(--surface); }
+.btn.icon { padding: 10px; width: 40px; height: 40px; justify-content: center; }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-lg { padding: 14px 28px; font-size: 15px; }
+
+/* ============================================================
+   INPUT / SEARCH
+============================================================ */
+.input {
+  font-family: var(--f-sans); font-size: 14px;
+  width: 100%; padding: 12px 18px; border: 0;
+  background: var(--surface); color: var(--ink);
+  border-radius: var(--r-pill);
+  box-shadow: var(--e-inset-sm);
+  outline: none;
+}
+.input::placeholder { color: var(--ink-3); }
+.input:focus { box-shadow: var(--e-inset); }
+.search { position: relative; display: flex; align-items: center; }
+.search .ico { position: absolute; left: 16px; color: var(--ink-3); pointer-events: none; display: flex; }
+.search .input { padding-left: 42px; }
+.kbd { font-family: var(--f-mono); font-size: 11px; padding: 3px 7px; color: var(--ink-3); background: var(--surface); border-radius: var(--r-xs); box-shadow: var(--e-raised-sm); }
+.search .kbd-slot { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); }
+
+/* ============================================================
+   BADGES
+============================================================ */
+.kind-badge {
+  font-family: var(--f-mono); font-size: 10px; font-weight: 500;
+  letter-spacing: .12em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: var(--r-pill);
+  display: inline-block;
+  background: var(--surface);
+}
+.kind-badge.post  { box-shadow: var(--e-raised-sm); color: var(--ink); }
+.kind-badge.note  { box-shadow: var(--e-inset-sm); color: var(--ink-3); }
+
+.tier-badge {
+  font-family: var(--f-mono); font-size: 9px; font-weight: 500;
+  letter-spacing: .1em; text-transform: uppercase;
+  padding: 2px 8px; border-radius: var(--r-xs);
+  display: inline-block;
+}
+.tier-badge.note    { box-shadow: var(--e-inset-sm); color: var(--ink-3); background: var(--surface); }
+.tier-badge.concept { box-shadow: var(--e-raised-sm); color: var(--ink); background: var(--surface-elev); }
+.tier-badge.global  { background: var(--ink); color: var(--surface); }
+
+.tag {
+  font-family: var(--f-mono); font-size: 11px;
+  padding: 4px 10px; border-radius: var(--r-pill);
+  background: var(--surface); color: var(--ink-2);
+  box-shadow: var(--e-inset-sm);
+  display: inline-block;
+}
+.tag.selected { box-shadow: var(--e-raised-sm); color: var(--ink); background: var(--surface-elev); }
+
+/* ============================================================
+   CARDS
+============================================================ */
+.card { background: var(--surface); border-radius: var(--r-md); padding: 22px 24px; box-shadow: var(--e-raised-sm); }
+.card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.card-meta { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); margin-left: auto; }
+.card-title { font-family: var(--f-serif); font-size: 22px; font-weight: 600; margin: 0; line-height: 1.2; letter-spacing: -.005em; }
+.card-excerpt { font-family: var(--f-serif); font-size: 15px; color: var(--ink-2); margin-top: 8px; line-height: 1.55; }
+.card-tags { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+
+.post-card { display: grid; grid-template-columns: 160px 1fr; gap: 20px; align-items: start; }
+.post-card .thumb {
+  aspect-ratio: 4/3;
+  border-radius: var(--r-sm);
+  background: var(--surface-sunk);
+  box-shadow: var(--e-inset-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
+}
+
+/* QA Card */
+.qa-card { background: var(--surface); border-radius: var(--r-sm); padding: 12px 16px; box-shadow: var(--e-raised-sm); transition: box-shadow var(--dur-fast) var(--ease); }
+.qa-card:hover { box-shadow: var(--e-raised); }
+.qa-card.open { box-shadow: var(--e-inset-sm); }
+.qa-card .q { display: flex; align-items: center; gap: 8px; justify-content: space-between; cursor: pointer; }
+.qa-card .q-text { font-family: var(--f-serif); font-size: 14px; font-weight: 500; color: var(--ink); flex: 1; }
+.qa-card .a { font-family: var(--f-serif); font-size: 13.5px; line-height: 1.6; color: var(--ink-2); margin-top: 10px; padding-top: 10px; border-top: 1px solid oklch(0.82 0.005 var(--hue)); display: none; }
+.qa-card.open .a { display: block; }
+
+/* ============================================================
+   TOPBAR / NAV
+============================================================ */
+.topbar-demo {
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e-raised-sm);
+  padding: 14px 20px;
+  display: flex; align-items: center; gap: 14px;
+}
+.logo { font-family: var(--f-serif); font-weight: 700; font-size: 20px; letter-spacing: -.01em; }
+.logo .dot { display: inline-block; width: 8px; height: 8px; background: var(--ink); border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.nav-links { display: flex; gap: 2px; margin-left: auto; }
+.nav-link {
+  font-family: var(--f-sans); font-size: 13px; font-weight: 500;
+  padding: 7px 14px; border-radius: var(--r-pill);
+  color: var(--ink-2); text-decoration: none;
+  transition: all var(--dur-fast) var(--ease);
+}
+.nav-link:hover { color: var(--ink); }
+.nav-link.active { color: var(--ink); box-shadow: var(--e-inset-sm); background: var(--surface); }
+
+/* ============================================================
+   SIDEBAR / TOC
+============================================================ */
+.toc { background: var(--surface); border-radius: var(--r-md); padding: 20px 22px; box-shadow: var(--e-raised-sm); }
+.toc .label { font-family: var(--f-mono); font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; }
+.toc ul { list-style: none; padding: 0; margin: 0; }
+.toc li { font-family: var(--f-serif); font-size: 14px; padding: 5px 0; color: var(--ink-2); cursor: pointer; position: relative; padding-left: 14px; transition: color var(--dur-fast) var(--ease); }
+.toc li::before { content: ""; position: absolute; left: 0; top: 50%; width: 4px; height: 4px; background: var(--ink-4); border-radius: 50%; transform: translateY(-50%); }
+.toc li.active { color: var(--ink); font-weight: 500; }
+.toc li.active::before { background: var(--ink); width: 6px; height: 6px; }
+.toc li:hover { color: var(--ink); }
+.toc li.l2 { padding-left: 26px; font-size: 13px; }
+.toc li.l2::before { left: 14px; }
+
+/* ============================================================
+   CODE BLOCK
+============================================================ */
+.codeblock {
+  font-family: var(--f-mono); font-size: 13px; line-height: 1.65;
+  background: var(--surface-sunk); color: var(--ink);
+  border-radius: var(--r-sm);
+  padding: 16px 20px;
+  box-shadow: var(--e-inset-sm);
+  overflow-x: auto;
+}
+.codeblock .c { color: var(--ink-3); font-style: italic; }
+.codeblock .k { color: var(--ink); font-weight: 600; }
+.codeblock .s { color: var(--ink-2); }
+.codeblock .n { color: var(--ink-2); }
+
+/* ============================================================
+   MINI MESH
+============================================================ */
+.mini-mesh {
+  position: relative;
+  aspect-ratio: 1/1;
+  background: var(--surface);
+  border-radius: var(--r-md);
+  box-shadow: var(--e-inset-sm);
+  padding: 16px;
+  overflow: hidden;
+}
+.mini-mesh svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mini-mesh .mesh-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: var(--surface);
+  border-radius: var(--r-pill);
+  padding: 4px 10px;
+  font-family: var(--f-sans); font-size: 11px; font-weight: 500;
+  color: var(--ink-2);
+  box-shadow: var(--e-raised-sm);
+  white-space: nowrap;
+}
+.mini-mesh .mesh-node.hub { box-shadow: var(--e-raised); color: var(--ink); font-weight: 600; font-size: 12px; }
+.mini-mesh .mesh-node.selected { box-shadow: var(--e-inset-sm); background: var(--ink); color: var(--surface); }
+
+/* ============================================================
+   FOOTER
+============================================================ */
+.footer-demo { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--e-raised-sm); padding: 36px 40px; }
+.footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px; }
+.footer-col .ch { font-family: var(--f-mono); font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; }
+.footer-col a { font-family: var(--f-serif); font-size: 14px; color: var(--ink-2); text-decoration: none; display: block; padding: 3px 0; }
+.footer-col a:hover { color: var(--ink); }
+.footer-col .brand { font-family: var(--f-serif); font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+.footer-col .tagline { font-family: var(--f-serif); font-size: 13px; color: var(--ink-3); line-height: 1.55; font-style: italic; }
+
+/* ============================================================
+   Theme editor (JSON injection demo)
+============================================================ */
+.theme-editor {
+  position: fixed; right: 24px; bottom: 24px; z-index: 80;
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e-raised-lg);
+  width: 380px; max-width: calc(100vw - 32px);
+  max-height: 72vh; display: none; flex-direction: column;
+  overflow: hidden;
+}
+.theme-editor.open { display: flex; }
+.theme-editor header { padding: 18px 22px 12px; display: flex; align-items: center; gap: 10px; }
+.theme-editor header h4 { font-family: var(--f-serif); font-size: 16px; margin: 0; font-weight: 600; }
+.theme-editor header .close { margin-left: auto; }
+.theme-editor .body { padding: 0 22px 22px; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+.theme-editor textarea {
+  font-family: var(--f-mono); font-size: 11.5px; line-height: 1.55;
+  width: 100%; min-height: 220px; resize: vertical;
+  background: var(--surface); color: var(--ink);
+  border: 0; padding: 14px 16px;
+  border-radius: var(--r-sm);
+  box-shadow: var(--e-inset-sm); outline: none;
+}
+.theme-editor .row { display: flex; gap: 8px; }
+.theme-editor .preset { font-family: var(--f-sans); font-size: 11px; flex: 1; padding: 8px 10px; border-radius: var(--r-sm); border: 0; background: var(--surface); color: var(--ink-2); box-shadow: var(--e-raised-sm); cursor: pointer; }
+.theme-editor .preset:hover { color: var(--ink); }
+.theme-editor .preset.active { box-shadow: var(--e-inset-sm); color: var(--ink); }
+.theme-editor .status { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); padding: 2px 4px; }
+.theme-editor .status.err { color: oklch(0.45 0.15 25); }
+.theme-editor .status.ok { color: oklch(0.42 0.12 155); }
+
+.theme-toggle {
+  position: fixed; right: 24px; bottom: 24px; z-index: 79;
+  padding: 12px 18px; border-radius: var(--r-pill);
+  background: var(--ink); color: var(--surface); border: 0;
+  font-family: var(--f-sans); font-size: 13px; font-weight: 500;
+  box-shadow: var(--e-raised);
+  cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+}
+.theme-toggle:hover { box-shadow: var(--e-raised-lg); }
+
+/* ============================================================
+   Misc
+============================================================ */
+.callout { font-family: var(--f-serif); font-style: italic; color: var(--ink-2); font-size: 14px; padding: 14px 18px; background: var(--surface); box-shadow: var(--e-inset-sm); border-radius: var(--r-sm); line-height: 1.6; }
+.split { display: grid; grid-template-columns: 280px 1fr; gap: 28px; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; } }
+
+.sidebar-nav {
+  position: sticky; top: 24px;
+  padding: 18px 20px; background: var(--surface);
+  border-radius: var(--r-md); box-shadow: var(--e-raised-sm);
+  align-self: start;
+}
+.sidebar-nav .label { font-family: var(--f-mono); font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; }
+.sidebar-nav a { display: block; font-family: var(--f-sans); font-size: 13px; color: var(--ink-2); text-decoration: none; padding: 5px 10px; border-radius: var(--r-xs); margin-bottom: 2px; }
+.sidebar-nav a:hover { color: var(--ink); }
+.sidebar-nav a.active { box-shadow: var(--e-inset-sm); color: var(--ink); }
+.sidebar-nav .divider { margin: 10px 0; height: 1px; background: oklch(0.82 0.005 var(--hue)); }
+
+.pagenav-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  text-decoration: none; color: var(--ink-2);
+  font-family: var(--f-sans); font-size: 14px; font-weight: 500;
+  padding: 10px 18px; border-radius: var(--r-pill);
+  background: var(--surface); box-shadow: var(--e-raised-sm);
+  transition: box-shadow var(--dur-fast) var(--ease);
+}
+.pagenav-link:hover { box-shadow: var(--e-raised); color: var(--ink); }
+
+/* Topbar link to blog */
+.top-cta {
+  position: fixed; top: 20px; right: 24px; z-index: 50;
+  background: var(--surface); border-radius: var(--r-pill);
+  box-shadow: var(--e-raised-sm); padding: 8px 16px;
+  font-family: var(--f-sans); font-size: 12px; color: var(--ink-2);
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.top-cta:hover { box-shadow: var(--e-raised); color: var(--ink); }
+</style>
+</head>
+<body>
+
+<a class="top-cta" href="blog.html">blog.html &nbsp;→</a>
+
+<div class="ds-shell">
+
+  <!-- ==================== INTRO ==================== -->
+  <div class="ds-kicker">meshblog · design system · v1</div>
+  <h1 class="ds-title">Paper, ink, and a quiet kind of depth.</h1>
+  <p class="ds-intro">흑백만 쓰고 깊이는 오직 빛과 그림자로 표현한다. 정보 위계는 종이의 튀어나옴과 눌림 — 떠오른 것은 집을 수 있고, 눌린 것은 상태를 품는다. 이 한 규칙이 모든 컴포넌트를 관통한다.</p>
+
+  <div class="ds-meta-row">
+    <div class="ds-meta"><b>route coverage</b>/ · /posts/[slug] · /notes/[slug] · /graph · search · 404</div>
+    <div class="ds-meta"><b>theming</b>단일 JSON 객체 주입 → 전체 사이트 재스타일</div>
+    <div class="ds-meta"><b>stack</b>Astro 정적 + 두 React island</div>
+    <div class="ds-meta"><b>type</b>Literata (serif, 본문) + Pretendard (sans, UI)</div>
+  </div>
+
+  <!-- ==================== 00 원칙 ==================== -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <span class="num">00</span>
+      <h2>원칙</h2>
+      <span class="hint">왜 이렇게 생겼는가</span>
+    </div>
+    <div class="ds-grid g-3">
+      <div class="spec">
+        <div class="name">흑백 only</div>
+        <div class="desc">색상 대비로 강조하지 않는다. 모든 강세는 명도 + 음영 + 타이포그래피 weight로만 표현한다. 채도는 warm-trace (hue 60, chroma 0.003) 수준으로만 허용.</div>
+      </div>
+      <div class="spec">
+        <div class="name">표면 하나, 그림자 둘</div>
+        <div class="desc">바탕과 카드가 <b>같은 색</b>이다. 카드는 빛(위)과 그림자(아래)로만 분리된다. 경계선은 거의 쓰지 않는다 — 음영이 곧 구조다.</div>
+      </div>
+      <div class="spec">
+        <div class="name">Raised vs Inset</div>
+        <div class="desc">집을 수 있는 것(버튼, 카드, 뱃지)은 <b>밖으로</b>, 받아들이는 것(입력, 선택됨, 코드)은 <b>안으로</b>. 같은 요소여도 상태에 따라 방향이 뒤집힌다.</div>
+      </div>
+      <div class="spec">
+        <div class="name">Serif reads, sans navigates</div>
+        <div class="desc">읽는 글은 Literata. UI 라벨, 버튼, 메타는 Pretendard. Mono는 라우트, 토큰 이름, 코드에만.</div>
+      </div>
+      <div class="spec">
+        <div class="name">토큰으로만 그린다</div>
+        <div class="desc">모든 값이 <code>:root</code>의 CSS 변수. 컴포넌트 내부에 하드코딩된 색/그림자/radius 금지. 테마 교체 시 한 블록만 바뀐다.</div>
+      </div>
+      <div class="spec">
+        <div class="name">고요함이 기본값</div>
+        <div class="desc">애니메이션은 240ms ease-out-quint 한 종류. 바운스 없음, 스프링 없음. 종이가 움직이는 것처럼.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 01 COLOR ==================== -->
+  <section class="ds-section" id="color">
+    <div class="ds-section-head">
+      <span class="num">01</span>
+      <h2>색</h2>
+      <span class="hint">9 step, 전부 oklch · warm trace</span>
+    </div>
+    <div class="swatch-row">
+      <div class="swatch sw-bg"><span class="n">--bg</span><span class="v">oklch(.930 .003 60)</span></div>
+      <div class="swatch sw-surface"><span class="n">--surface</span><span class="v">== bg (뉴모피즘 기본)</span></div>
+      <div class="swatch sw-elev"><span class="n">--surface-elev</span><span class="v">oklch(.955 .003 60)</span></div>
+      <div class="swatch sw-sunk"><span class="n">--surface-sunk</span><span class="v">oklch(.905 .003 60)</span></div>
+      <div class="swatch sw-ink"><span class="n">--ink</span><span class="v">oklch(.220 .005 60)</span></div>
+      <div class="swatch sw-ink2"><span class="n">--ink-2</span><span class="v">oklch(.360 .005 60)</span></div>
+      <div class="swatch sw-ink3"><span class="n">--ink-3</span><span class="v">oklch(.520 .005 60)</span></div>
+      <div class="swatch sw-ink4"><span class="n">--ink-4</span><span class="v">oklch(.680 .005 60)</span></div>
+    </div>
+    <p class="callout" style="margin-top:24px">Warm trace (hue 60, chroma 0.003)가 모든 값에 섞여 있어 순수한 #fff/#000을 피합니다. 이 기본 규칙은 밝기만 교체되어도 유지됩니다.</p>
+  </section>
+
+  <!-- ==================== 02 TYPE ==================== -->
+  <section class="ds-section" id="type">
+    <div class="ds-section-head">
+      <span class="num">02</span>
+      <h2>타이포그래피</h2>
+      <span class="hint">Literata · Pretendard · JetBrains Mono</span>
+    </div>
+
+    <div class="type-row">
+      <span class="label">display · 5xl</span>
+      <span class="sample" style="font-size:56px; font-weight:600; line-height:1.02; letter-spacing:-.01em">왜 meshblog를 만들었나</span>
+      <span class="size">56 / 1.02</span>
+    </div>
+    <div class="type-row">
+      <span class="label">title · 3xl</span>
+      <span class="sample" style="font-size:34px; font-weight:600; line-height:1.1; letter-spacing:-.005em">연결의 가치</span>
+      <span class="size">34 / 1.1</span>
+    </div>
+    <div class="type-row">
+      <span class="label">section · xl</span>
+      <span class="sample" style="font-size:22px; font-weight:600">기존 블로그의 문제</span>
+      <span class="size">22 / 1.25</span>
+    </div>
+    <div class="type-row">
+      <span class="label">prose · md</span>
+      <span class="sample" style="font-size:17px; line-height:1.7">지식이란 원래 그물처럼 얽혀 있는데, 대부분의 블로그는 그걸 한 줄로 세웠을 뿐이다.</span>
+      <span class="size">17 / 1.7</span>
+    </div>
+    <div class="type-row">
+      <span class="label">body · base</span>
+      <span class="sample" style="font-size:15px; line-height:1.6">본문 기본. 카드 내부 요약에서 주로 쓰인다.</span>
+      <span class="size">15 / 1.6</span>
+    </div>
+    <div class="type-row ui">
+      <span class="label">ui · sm</span>
+      <span class="sample" style="font-size:13px">탐색, 메뉴, 버튼 라벨에 쓰이는 sans.</span>
+      <span class="size">13 / 1.45</span>
+    </div>
+    <div class="type-row mono">
+      <span class="label">mono · xs</span>
+      <span class="sample" style="font-size:11px; letter-spacing:.06em">/posts/why-i-built-meshblog · 7 min · 2026-04-19</span>
+      <span class="size">11 / 1.45</span>
+    </div>
+  </section>
+
+  <!-- ==================== 03 SPACE / RADIUS ==================== -->
+  <section class="ds-section" id="space">
+    <div class="ds-section-head">
+      <span class="num">03</span>
+      <h2>간격과 둥글기</h2>
+      <span class="hint">4-base scale · editorial radius</span>
+    </div>
+    <div class="ds-grid g-2">
+      <div class="spec">
+        <div class="name">spacing (px)</div>
+        <div class="desc">4 배수만 사용. 1~16 사이 값만 허용하고 나머지는 금지.</div>
+        <div class="demo flat" style="justify-content:flex-start; gap:6px; flex-wrap:wrap">
+          <span class="tag">4</span><span class="tag">8</span><span class="tag">12</span><span class="tag">16</span>
+          <span class="tag">20</span><span class="tag">24</span><span class="tag">32</span><span class="tag">40</span>
+          <span class="tag">48</span><span class="tag">64</span>
+        </div>
+      </div>
+      <div class="spec">
+        <div class="name">radius</div>
+        <div class="desc">컴포넌트의 성격에 따라 다르게. pill은 인터랙션, md는 카드, sm은 내부 요소.</div>
+        <div class="demo" style="gap:14px">
+          <div style="width:42px;height:42px;background:var(--surface);box-shadow:var(--e-raised-sm);border-radius:var(--r-xs)"></div>
+          <div style="width:42px;height:42px;background:var(--surface);box-shadow:var(--e-raised-sm);border-radius:var(--r-sm)"></div>
+          <div style="width:42px;height:42px;background:var(--surface);box-shadow:var(--e-raised-sm);border-radius:var(--r-md)"></div>
+          <div style="width:42px;height:42px;background:var(--surface);box-shadow:var(--e-raised-sm);border-radius:var(--r-lg)"></div>
+          <div style="width:42px;height:42px;background:var(--surface);box-shadow:var(--e-raised-sm);border-radius:var(--r-pill)"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 04 ELEVATION ==================== -->
+  <section class="ds-section" id="elev">
+    <div class="ds-section-head">
+      <span class="num">04</span>
+      <h2>음영 · Elevation</h2>
+      <span class="hint">뉴모피즘의 심장</span>
+    </div>
+    <p class="callout" style="margin-bottom:24px">그림자 한 쌍 (밝은 빛 좌상 + 어두운 그림자 우하)이 모든 입체감을 만든다. 여섯 가지 조합으로 요소의 성격과 상태를 표현한다.</p>
+
+    <div class="ds-grid g-3">
+      <div class="elev-card elev-raised-sm"><span class="tag">raised · sm</span><span class="desc">기본 카드, 뱃지, 버튼 idle — 살짝 떠 있음</span></div>
+      <div class="elev-card elev-raised"><span class="tag">raised</span><span class="desc">강조 카드, 버튼 hover — 집을 수 있음</span></div>
+      <div class="elev-card elev-raised-lg"><span class="tag">raised · lg</span><span class="desc">모달, 플로팅 패널 — 확실히 위</span></div>
+      <div class="elev-card elev-inset-sm"><span class="tag">inset · sm</span><span class="desc">선택된 탭, 입력 idle, kind-badge · note</span></div>
+      <div class="elev-card elev-inset"><span class="tag">inset</span><span class="desc">입력 focus, 선택된 노드, active 영역</span></div>
+      <div class="elev-card elev-press"><span class="tag">press</span><span class="desc">버튼 active — 더 깊게 눌림</span></div>
+    </div>
+  </section>
+
+  <!-- ==================== 05 BUTTON ==================== -->
+  <section class="ds-section" id="button">
+    <div class="ds-section-head">
+      <span class="num">05</span>
+      <h2>Button</h2>
+      <span class="hint">primary · secondary · ghost · icon</span>
+    </div>
+    <div class="ds-grid g-3">
+      <div class="spec">
+        <div class="name">Primary</div>
+        <div class="desc">페이지당 하나. 어두운 잉크색 위에 sans weight 500.</div>
+        <div class="demo" style="gap:10px; flex-wrap:wrap">
+          <button class="btn primary btn-sm">읽기 →</button>
+          <button class="btn primary">글 열기</button>
+          <button class="btn primary btn-lg">구독하기</button>
+        </div>
+      </div>
+      <div class="spec">
+        <div class="name">Secondary</div>
+        <div class="desc">기본 표면 위에 떠 있음. 여러 개 병렬 가능.</div>
+        <div class="demo" style="gap:10px; flex-wrap:wrap">
+          <button class="btn btn-sm">share</button>
+          <button class="btn">backlinks 4</button>
+          <button class="btn btn-lg">전체 그래프</button>
+        </div>
+      </div>
+      <div class="spec">
+        <div class="name">Ghost · Icon</div>
+        <div class="desc">음영 없이 놓여 있다가 hover 시에만 떠오른다.</div>
+        <div class="demo" style="gap:10px">
+          <button class="btn ghost">더 보기</button>
+          <button class="btn icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="M10.3 10.3L13.5 13.5"/></svg>
+          </button>
+          <button class="btn icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h8v8H4zM4 4l4 4 4-4"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="ds-grid g-3" style="margin-top:20px">
+      <div class="spec">
+        <div class="name">Pressed state</div>
+        <div class="desc">active 시 inset으로 뒤집힘. 상태 지속형(토글) 버튼도 동일 공식.</div>
+        <div class="demo" style="gap:10px">
+          <button class="btn active">눌린 상태</button>
+          <button class="btn primary" style="box-shadow:inset 3px 3px 6px oklch(0 0 0 / .6), inset -1px -1px 2px oklch(1 0 0 / .08);">눌린 primary</button>
+        </div>
+      </div>
+      <div class="spec">
+        <div class="name">Disabled</div>
+        <div class="desc">그림자 제거 + opacity 0.4. 눌리지 않는다는 걸 음영으로 알린다.</div>
+        <div class="demo" style="gap:10px">
+          <button class="btn" disabled style="opacity:.4; box-shadow:none; cursor:not-allowed">글 쓰기</button>
+          <button class="btn primary" disabled style="opacity:.4; box-shadow:none; cursor:not-allowed">비활성</button>
+        </div>
+      </div>
+      <div class="spec">
+        <div class="name">Button group</div>
+        <div class="desc">같은 축의 선택지. 하나만 inset으로 눌림.</div>
+        <div class="demo" style="gap:4px">
+          <button class="btn btn-sm active">L1</button>
+          <button class="btn btn-sm">L2</button>
+          <button class="btn btn-sm">L3</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 06 INPUT ==================== -->
+  <section class="ds-section" id="input">
+    <div class="ds-section-head">
+      <span class="num">06</span>
+      <h2>Input · Search</h2>
+      <span class="hint">항상 inset — 받아들이는 표면</span>
+    </div>
+    <div class="ds-grid g-2">
+      <div class="spec">
+        <div class="name">Text input</div>
+        <div class="desc">기본 상태부터 inset. focus 시 inset이 더 깊어진다.</div>
+        <div class="demo flat" style="flex-direction:column; gap:10px; align-items:stretch">
+          <input class="input" placeholder="이메일" />
+          <input class="input" placeholder="이름 (focus)" style="box-shadow:var(--e-inset)" />
+        </div>
+      </div>
+      <div class="spec">
+        <div class="name">Search</div>
+        <div class="desc">아이콘 좌측, ⌘K 힌트 우측. 리딩 프리뷰와 글로벌 모두 동일 스타일.</div>
+        <div class="demo flat">
+          <div class="search" style="width:100%">
+            <span class="ico"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="M10.3 10.3L13.5 13.5"/></svg></span>
+            <input class="input" placeholder="vault에 질문해보세요…" />
+            <span class="kbd-slot"><span class="kbd">⌘K</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 07 BADGES ==================== -->
+  <section class="ds-section" id="badges">
+    <div class="ds-section-head">
+      <span class="num">07</span>
+      <h2>Badge · Tag</h2>
+      <span class="hint">kind (post/note) · tier (note/concept/global) · tag</span>
+    </div>
+    <div class="ds-grid g-3">
+      <div class="spec">
+        <div class="name">kind-badge</div>
+        <div class="desc">post는 떠오르고(중요함), note는 눌려 있다(배경 요소). 색 없이도 위계가 생긴다.</div>
+        <div class="demo" style="gap:14px"><span class="kind-badge post">post</span><span class="kind-badge note">note</span></div>
+      </div>
+      <div class="spec">
+        <div class="name">tier-badge (QAChips)</div>
+        <div class="desc">답변의 범위. note 단일 → concept 묶음 → global 전체 vault. 단계가 올라갈수록 음영이 깊어진다.</div>
+        <div class="demo" style="gap:10px"><span class="tier-badge note">note</span><span class="tier-badge concept">concept</span><span class="tier-badge global">global</span></div>
+      </div>
+      <div class="spec">
+        <div class="name">tag</div>
+        <div class="desc">해시태그/필터. idle은 inset(배경), 선택은 raised(집힘).</div>
+        <div class="demo" style="gap:8px; flex-wrap:wrap">
+          <span class="tag">#blogging</span>
+          <span class="tag selected">#llm</span>
+          <span class="tag">#rag</span>
+          <span class="tag">#astro</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 08 CARDS ==================== -->
+  <section class="ds-section" id="cards">
+    <div class="ds-section-head">
+      <span class="num">08</span>
+      <h2>Card</h2>
+      <span class="hint">post · note · qa</span>
+    </div>
+
+    <div class="ds-grid g-2">
+      <div class="spec">
+        <div class="name">post-card (hero)</div>
+        <div class="desc">피드 최상단. 썸네일 없이 타이포만으로도 성립.</div>
+        <div class="demo flat" style="padding:0">
+          <article class="card" style="width:100%">
+            <div class="card-head">
+              <span class="kind-badge post">post</span>
+              <span class="card-meta">2026-04-19 · 7 min</span>
+            </div>
+            <h3 class="card-title" style="font-size:26px">왜 meshblog를 만들었나</h3>
+            <p class="card-excerpt">지식이란 원래 그물처럼 얽혀 있는데, 대부분의 블로그는 그걸 한 줄로 세웠을 뿐이다. meshblog는 연결 자체를 1급 시민으로 대우한다.</p>
+            <div class="card-tags"><span class="tag">#blogging</span><span class="tag">#design</span><span class="tag">#knowledge-graph</span></div>
+          </article>
+        </div>
+      </div>
+      <div class="spec">
+        <div class="name">post-card (list w/ thumb)</div>
+        <div class="desc">피드 두 번째부터. 썸네일은 sunk 표면으로 구멍처럼 박힘.</div>
+        <div class="demo flat" style="padding:0">
+          <article class="card" style="width:100%">
+            <div class="post-card">
+              <div class="thumb">og</div>
+              <div>
+                <div class="card-head">
+                  <span class="kind-badge post">post</span>
+                  <span class="card-meta">2026-04-14 · 6 min</span>
+                </div>
+                <h3 class="card-title" style="font-size:20px">SQLite is all you need</h3>
+                <p class="card-excerpt" style="font-size:14px">빌드타임에 한번만 돌면 끝나는 쿼리는 DB가 필요 없다.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+      <div class="spec">
+        <div class="name">note-card</div>
+        <div class="desc">atomic note. kind-badge가 inset이라 피드에서 덜 돋보임.</div>
+        <div class="demo flat" style="padding:0">
+          <article class="card" style="width:100%; padding:16px 20px">
+            <div class="card-head">
+              <span class="kind-badge note">note</span>
+              <span class="card-meta">2 min · notes/09</span>
+            </div>
+            <h3 class="card-title" style="font-size:17px">knowledge-graphs</h3>
+            <p class="card-excerpt" style="font-size:13.5px; margin-top:4px">노드는 개념이 아니라 "구체적인 메모". 엣지는 인용/역참조/동시출현.</p>
+          </article>
+        </div>
+      </div>
+      <div class="spec">
+        <div class="name">qa-card (closed / open)</div>
+        <div class="desc">질문 클릭하면 raised → inset으로 뒤집힘. 열림 상태 자체가 눌려 있는 모양.</div>
+        <div class="demo flat" style="padding:0; flex-direction:column; gap:10px; align-items:stretch">
+          <div class="qa-card">
+            <div class="q"><span class="q-text">왜 Medium이 아닌가?</span><span class="tier-badge note">note</span></div>
+          </div>
+          <div class="qa-card open">
+            <div class="q"><span class="q-text">graph 구조의 가치는?</span><span class="tier-badge concept">concept</span></div>
+            <div class="a">한 노트가 다른 노트를 참조할 때 그건 개념 사이의 의존성이고, 독자는 그 의존성을 따라가며 저자의 생각 구조 자체를 배울 수 있다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 09 NAV ==================== -->
+  <section class="ds-section" id="nav">
+    <div class="ds-section-head">
+      <span class="num">09</span>
+      <h2>Navigation · Topbar</h2>
+      <span class="hint">sticky · 단일 rail · active는 inset</span>
+    </div>
+    <div class="topbar-demo">
+      <span class="logo"><span class="dot"></span>meshblog</span>
+      <nav class="nav-links">
+        <a class="nav-link active">posts</a>
+        <a class="nav-link">notes</a>
+        <a class="nav-link">graph</a>
+        <a class="nav-link">about</a>
+      </nav>
+      <div class="search" style="width:240px">
+        <span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="M10.3 10.3L13.5 13.5"/></svg></span>
+        <input class="input" placeholder="search…" style="padding-top:8px; padding-bottom:8px; font-size:13px" />
+        <span class="kbd-slot"><span class="kbd">⌘K</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 10 SIDEBAR / TOC ==================== -->
+  <section class="ds-section" id="toc">
+    <div class="ds-section-head">
+      <span class="num">10</span>
+      <h2>Sidebar · TOC · Backlinks</h2>
+      <span class="hint">읽기 화면 우측 레일</span>
+    </div>
+    <div class="ds-grid g-3">
+      <div class="spec" style="padding:0">
+        <div style="padding:24px 24px 0"><div class="name">Table of contents</div><div class="desc">현재 위치는 inset 없이 dot 하나 키움.</div></div>
+        <div class="demo flat" style="padding:18px"><div class="toc" style="width:100%">
+          <div class="label">contents</div>
+          <ul>
+            <li>기존 블로그의 문제</li>
+            <li class="active">연결의 가치</li>
+            <li class="l2">왜 그물인가</li>
+            <li class="l2">어떻게 드러내나</li>
+            <li>LLM-generated Q&A</li>
+            <li>설계 원칙</li>
+          </ul>
+        </div></div>
+      </div>
+      <div class="spec" style="padding:0">
+        <div style="padding:24px 24px 0"><div class="name">Backlinks</div><div class="desc">이 글을 인용한 다른 글. 화살표 방향으로 방향성 표기.</div></div>
+        <div class="demo flat" style="padding:18px"><div class="toc" style="width:100%">
+          <div class="label">backlinks · 4</div>
+          <ul>
+            <li>← shipping-solo</li>
+            <li>← static-sites-2026</li>
+            <li>← note · philosophy</li>
+            <li>← note · obsidian-workflows</li>
+          </ul>
+        </div></div>
+      </div>
+      <div class="spec" style="padding:0">
+        <div style="padding:24px 24px 0"><div class="name">Concepts (in this post)</div><div class="desc">개념 태그 클라우드. 이 글이 속한 RAG 클러스터.</div></div>
+        <div class="demo flat" style="padding:18px"><div class="toc" style="width:100%">
+          <div class="label">concepts · 3</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px">
+            <span class="tag selected">knowledge-graph</span>
+            <span class="tag selected">llm</span>
+            <span class="tag">2nd-brain</span>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 11 CODE ==================== -->
+  <section class="ds-section" id="code">
+    <div class="ds-section-head">
+      <span class="num">11</span>
+      <h2>Code block</h2>
+      <span class="hint">sunk 표면 · 흑백 신택스</span>
+    </div>
+    <div class="ds-grid g-2">
+      <div class="spec">
+        <div class="name">block</div>
+        <div class="desc">문맥에서 한 단계 가라앉은 표면. 신택스는 weight만으로 구분.</div>
+        <div class="demo flat" style="padding:0">
+<pre class="codeblock" style="width:100%; margin:0"><span class="c"># retrieve.py</span>
+<span class="k">def</span> <span class="n">retrieve</span>(q, k=<span class="s">5</span>):
+    vectors = index.search(q, k)
+    <span class="k">return</span> [v.id <span class="k">for</span> v <span class="k">in</span> vectors]</pre>
+        </div>
+      </div>
+      <div class="spec">
+        <div class="name">inline</div>
+        <div class="desc">문장 안의 코드. 아주 얕은 inset으로만 구분.</div>
+        <div class="demo flat" style="padding:0">
+          <p style="font-family:var(--f-serif); font-size:15px; line-height:1.7; margin:0">
+            빌드 파이프라인은 <code style="font-family:var(--f-mono); font-size:.88em; padding:2px 6px; border-radius:4px; background:var(--surface-sunk); box-shadow:var(--e-inset-sm);">bun run build-all</code>로 한 번에 돌고, 결과물은 <code style="font-family:var(--f-mono); font-size:.88em; padding:2px 6px; border-radius:4px; background:var(--surface-sunk); box-shadow:var(--e-inset-sm);">.data/index.db</code>에 쌓인다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 12 QACHIPS ==================== -->
+  <section class="ds-section" id="qachips">
+    <div class="ds-section-head">
+      <span class="num">12</span>
+      <h2>QAChips</h2>
+      <span class="hint">island · page vs global scope</span>
+    </div>
+    <p class="callout" style="margin-bottom:20px">blog의 가장 중요한 인터랙션 요소. scope에 따라 placeholder가 바뀐다: <code>page</code>는 "이 글에 질문해보세요", <code>global</code>은 "vault에 질문해보세요".</p>
+
+    <div class="ds-grid g-2">
+      <div class="spec" style="padding:22px">
+        <div class="name">page scope</div>
+        <div class="desc">현재 글(post 또는 note) 안에서만 답변을 찾는다. 사이드/하단에 배치.</div>
+        <div class="demo flat" style="padding:0; flex-direction:column; gap:10px; align-items:stretch">
+          <div class="search" style="width:100%">
+            <span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="M10.3 10.3L13.5 13.5"/></svg></span>
+            <input class="input" placeholder="이 글에 질문해보세요" />
+          </div>
+          <div class="qa-card">
+            <div class="q"><span class="q-text">왜 Obsidian을 선택했나?</span><span class="tier-badge note">note</span></div>
+          </div>
+          <div class="qa-card open">
+            <div class="q"><span class="q-text">graph 구조의 가치는?</span><span class="tier-badge concept">concept</span></div>
+            <div class="a">한 노트가 다른 노트를 참조할 때 그건 개념 사이의 의존성이고, 독자는 그 의존성을 따라가며 저자의 생각 구조를 배운다.</div>
+          </div>
+          <div class="qa-card">
+            <div class="q"><span class="q-text">공개 블로그로서의 제약?</span><span class="tier-badge note">note</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="spec" style="padding:22px">
+        <div class="name">global scope (home)</div>
+        <div class="desc">vault 전체에서 검색. tier-badge가 섞여 등장한다.</div>
+        <div class="demo flat" style="padding:0; flex-direction:column; gap:10px; align-items:stretch">
+          <div class="search" style="width:100%">
+            <span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="M10.3 10.3L13.5 13.5"/></svg></span>
+            <input class="input" placeholder="vault에 질문해보세요" />
+          </div>
+          <div class="qa-card open">
+            <div class="q"><span class="q-text">meshblog는 뭐가 다른가?</span><span class="tier-badge global">global</span></div>
+            <div class="a">기존 블로그가 글 단위 "문서"의 집합이라면, meshblog는 개념 단위 "노드"의 그물이다. 독자는 목차가 아니라 의미로 항행한다.</div>
+          </div>
+          <div class="qa-card">
+            <div class="q"><span class="q-text">왜 SQLite를 썼나?</span><span class="tier-badge concept">concept</span></div>
+          </div>
+          <div class="qa-card">
+            <div class="q"><span class="q-text">Astro islands의 트레이드오프?</span><span class="tier-badge note">note</span></div>
+          </div>
+          <div class="qa-card">
+            <div class="q"><span class="q-text">graph RAG의 한계는?</span><span class="tier-badge concept">concept</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 13 MINI MESH ==================== -->
+  <section class="ds-section" id="mesh">
+    <div class="ds-section-head">
+      <span class="num">13</span>
+      <h2>Mini mesh widget</h2>
+      <span class="hint">사이드바용 발췌 그래프</span>
+    </div>
+    <div class="ds-grid g-3">
+      <div class="spec" style="padding:20px">
+        <div class="name">related-mesh</div>
+        <div class="desc">현재 글을 중심으로 1-hop 이웃만 표시. 선은 얇은 rule.</div>
+        <div class="demo flat" style="padding:0">
+          <div class="mini-mesh" style="width:100%">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+              <line x1="50" y1="50" x2="22" y2="28" stroke="currentColor" stroke-width=".4" opacity=".35"/>
+              <line x1="50" y1="50" x2="80" y2="32" stroke="currentColor" stroke-width=".4" opacity=".35"/>
+              <line x1="50" y1="50" x2="28" y2="78" stroke="currentColor" stroke-width=".4" opacity=".35"/>
+              <line x1="50" y1="50" x2="80" y2="75" stroke="currentColor" stroke-width=".4" opacity=".35"/>
+            </svg>
+            <span class="mesh-node selected" style="left:50%; top:50%;">이 글</span>
+            <span class="mesh-node hub" style="left:22%; top:28%;">llm</span>
+            <span class="mesh-node hub" style="left:80%; top:32%;">graph</span>
+            <span class="mesh-node" style="left:28%; top:78%;">obsidian</span>
+            <span class="mesh-node" style="left:80%; top:75%;">astro</span>
+          </div>
+        </div>
+      </div>
+      <div class="spec" style="padding:20px">
+        <div class="name">concept-cloud</div>
+        <div class="desc">home 우측. 크기 = PageRank. 중심 없이 자유 배치.</div>
+        <div class="demo flat" style="padding:0">
+          <div class="mini-mesh" style="width:100%">
+            <span class="mesh-node hub" style="left:35%; top:30%; font-size:14px">knowledge-graph</span>
+            <span class="mesh-node" style="left:72%; top:20%;">rag</span>
+            <span class="mesh-node hub" style="left:70%; top:60%;">llm</span>
+            <span class="mesh-node" style="left:22%; top:62%;">astro</span>
+            <span class="mesh-node" style="left:48%; top:78%;">sqlite</span>
+            <span class="mesh-node" style="left:85%; top:85%; font-size:10px">ssg</span>
+            <span class="mesh-node" style="left:12%; top:22%; font-size:10px">faq</span>
+          </div>
+        </div>
+      </div>
+      <div class="spec" style="padding:20px">
+        <div class="name">legend / scale</div>
+        <div class="desc">전체 그래프 뷰 상단의 범례. 노드 크기/스타일의 의미.</div>
+        <div class="demo flat" style="padding:0; flex-direction:column; gap:10px; align-items:flex-start">
+          <div style="display:flex; align-items:center; gap:10px"><span class="mesh-node" style="position:static; transform:none;">note</span><span style="font-size:12px; color:var(--ink-3)">· 한 개의 메모</span></div>
+          <div style="display:flex; align-items:center; gap:10px"><span class="mesh-node hub" style="position:static; transform:none;">concept</span><span style="font-size:12px; color:var(--ink-3)">· 묶인 개념 (허브)</span></div>
+          <div style="display:flex; align-items:center; gap:10px"><span class="mesh-node selected" style="position:static; transform:none;">selected</span><span style="font-size:12px; color:var(--ink-3)">· 현재 선택</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 14 FOOTER ==================== -->
+  <section class="ds-section" id="footer">
+    <div class="ds-section-head">
+      <span class="num">14</span>
+      <h2>Footer</h2>
+      <span class="hint">사이트 메타 · RSS · 링크</span>
+    </div>
+    <div class="footer-demo">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="brand"><span class="logo"><span class="dot"></span>meshblog</span></div>
+          <div class="tagline">Obsidian vault로 키우고, 정적 사이트로 내보내는 2nd-brain 블로그.</div>
+        </div>
+        <div class="footer-col">
+          <div class="ch">read</div>
+          <a>최신 posts</a>
+          <a>아카이브</a>
+          <a>태그</a>
+          <a>atom · rss</a>
+        </div>
+        <div class="footer-col">
+          <div class="ch">explore</div>
+          <a>graph</a>
+          <a>notes</a>
+          <a>개념 클러스터</a>
+          <a>random</a>
+        </div>
+        <div class="footer-col">
+          <div class="ch">about</div>
+          <a>만든 사람</a>
+          <a>콜로폰</a>
+          <a>github</a>
+          <a>mailto</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 15 THEMING ==================== -->
+  <section class="ds-section" id="theming">
+    <div class="ds-section-head">
+      <span class="num">15</span>
+      <h2>Theming · JSON 주입</h2>
+      <span class="hint">우하단 버튼으로 열어서 실시간 변환</span>
+    </div>
+    <div class="split">
+      <div>
+        <p class="callout">모든 디자인 토큰은 단일 JSON 객체로 추출되어 있습니다. 사용자가 자신의 디자인 가이드를 이 형식으로 제공하면, 키 하나당 CSS 변수 하나가 교체되어 <b>전체 사이트가 재스타일링</b>됩니다. 구조는 건드리지 않고 값만 바꿔요.</p>
+        <p style="font-family:var(--f-serif); font-size:15px; line-height:1.65; margin-top:14px">
+          우측 예시는 이 페이지와 blog.html 양쪽 모두에 적용됩니다. 우하단의 <b>테마</b> 버튼을 누르면 JSON 편집기가 열리고, 프리셋도 3개 준비돼 있어요. 저장해두면 다음 방문 시에도 유지됩니다 (<code style="font-family:var(--f-mono); font-size:.88em; padding:2px 6px; border-radius:4px; background:var(--surface-sunk); box-shadow:var(--e-inset-sm);">localStorage.meshblog_theme</code>).
+        </p>
+      </div>
+      <pre class="codeblock" id="theme-preview"><span class="c">// 현재 적용된 테마</span>
+<span class="k">const</span> theme = {
+  <span class="n">"hue"</span>: <span class="s">60</span>,
+  <span class="n">"surface"</span>: <span class="s">"oklch(.930 .003 60)"</span>,
+  <span class="n">"surface-elev"</span>: <span class="s">"oklch(.955 .003 60)"</span>,
+  <span class="n">"surface-sunk"</span>: <span class="s">"oklch(.905 .003 60)"</span>,
+  <span class="n">"ink"</span>: <span class="s">"oklch(.220 .005 60)"</span>,
+  <span class="n">"ink-2"</span>: <span class="s">"oklch(.360 .005 60)"</span>,
+  <span class="n">"ink-3"</span>: <span class="s">"oklch(.520 .005 60)"</span>,
+  <span class="n">"f-serif"</span>: <span class="s">"Literata, ..."</span>,
+  <span class="n">"f-sans"</span>: <span class="s">"Pretendard, ..."</span>,
+  <span class="n">"r-md"</span>: <span class="s">"14px"</span>,
+  <span class="n">"r-pill"</span>: <span class="s">"999px"</span>
+};</pre>
+    </div>
+  </section>
+
+  <!-- ==================== 페이지 이동 ==================== -->
+  <section class="ds-section">
+    <div class="ds-section-head">
+      <span class="num">→</span>
+      <h2>다음</h2>
+      <span class="hint">이 시스템이 실제로 적용된 모습</span>
+    </div>
+    <a class="pagenav-link" href="blog.html">blog.html — 6 pages로 보기 &nbsp;→</a>
+  </section>
+
+</div>
+
+<!-- ==================== THEME EDITOR ==================== -->
+<button class="theme-toggle" id="themeToggle">
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6"/><path d="M8 2v12M2 8h12"/></svg>
+  테마
+</button>
+<div class="theme-editor" id="themeEditor">
+  <header>
+    <h4>테마 · JSON</h4>
+    <button class="btn icon close" id="themeClose">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3l10 10M13 3L3 13"/></svg>
+    </button>
+  </header>
+  <div class="body">
+    <div class="row">
+      <button class="preset active" data-preset="paper">Paper</button>
+      <button class="preset" data-preset="mono">Mono</button>
+      <button class="preset" data-preset="night">Night</button>
+    </div>
+    <textarea id="themeJson" spellcheck="false"></textarea>
+    <div class="status" id="themeStatus">편집 후 자동 적용됩니다 (500ms)</div>
+    <div class="row">
+      <button class="btn btn-sm ghost" id="themeReset">초기화</button>
+      <button class="btn primary btn-sm" id="themeCopy" style="margin-left:auto">JSON 복사</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   JSON → CSS 변수 매핑
+   하나의 JSON 객체가 :root의 변수 전체를 정의합니다.
+============================================================ */
+const PRESETS = {
+  paper: {
+    "hue": "60",
+    "surface":      "oklch(0.930 0.003 60)",
+    "surface-elev": "oklch(0.955 0.003 60)",
+    "surface-sunk": "oklch(0.905 0.003 60)",
+    "bg":           "oklch(0.930 0.003 60)",
+    "ink":          "oklch(0.220 0.005 60)",
+    "ink-2":        "oklch(0.360 0.005 60)",
+    "ink-3":        "oklch(0.520 0.005 60)",
+    "ink-4":        "oklch(0.680 0.005 60)",
+    "light":        "oklch(1.000 0 0 / 0.75)",
+    "shade":        "oklch(0.650 0.005 60 / 0.28)",
+    "f-serif":      "'Literata', 'Pretendard', Georgia, serif",
+    "f-sans":       "'Pretendard', -apple-system, system-ui, sans-serif",
+    "f-mono":       "'JetBrains Mono', ui-monospace, Menlo, monospace",
+    "r-md":         "14px",
+    "r-pill":       "999px"
+  },
+  mono: {
+    "hue": "0",
+    "surface":      "oklch(0.945 0 0)",
+    "surface-elev": "oklch(0.970 0 0)",
+    "surface-sunk": "oklch(0.915 0 0)",
+    "bg":           "oklch(0.945 0 0)",
+    "ink":          "oklch(0.180 0 0)",
+    "ink-2":        "oklch(0.340 0 0)",
+    "ink-3":        "oklch(0.520 0 0)",
+    "ink-4":        "oklch(0.700 0 0)",
+    "light":        "oklch(1.000 0 0 / 0.9)",
+    "shade":        "oklch(0.400 0 0 / 0.30)",
+    "f-serif":      "'Literata', Georgia, serif",
+    "f-sans":       "'Pretendard', system-ui, sans-serif",
+    "f-mono":       "'JetBrains Mono', Menlo, monospace",
+    "r-md":         "8px",
+    "r-pill":       "999px"
+  },
+  night: {
+    "hue": "260",
+    "surface":      "oklch(0.250 0.010 260)",
+    "surface-elev": "oklch(0.295 0.012 260)",
+    "surface-sunk": "oklch(0.210 0.010 260)",
+    "bg":           "oklch(0.250 0.010 260)",
+    "ink":          "oklch(0.950 0.008 260)",
+    "ink-2":        "oklch(0.800 0.008 260)",
+    "ink-3":        "oklch(0.620 0.008 260)",
+    "ink-4":        "oklch(0.480 0.008 260)",
+    "light":        "oklch(0.420 0.012 260 / 0.75)",
+    "shade":        "oklch(0.100 0.010 260 / 0.75)",
+    "f-serif":      "'Literata', Georgia, serif",
+    "f-sans":       "'Pretendard', system-ui, sans-serif",
+    "f-mono":       "'JetBrains Mono', Menlo, monospace",
+    "r-md":         "14px",
+    "r-pill":       "999px"
+  }
+};
+
+function applyTheme(obj) {
+  const root = document.documentElement;
+  for (const [k, v] of Object.entries(obj)) {
+    root.style.setProperty('--' + k, v);
+  }
+  try { localStorage.setItem('meshblog_theme', JSON.stringify(obj)); } catch(e) {}
+  // 프리뷰 코드블록 업데이트
+  const pv = document.getElementById('theme-preview');
+  if (pv) {
+    const lines = ['<span class="c">// 현재 적용된 테마</span>', '<span class="k">const</span> theme = {'];
+    const entries = Object.entries(obj);
+    entries.forEach(([k, v], i) => {
+      const comma = i < entries.length - 1 ? ',' : '';
+      const val = (typeof v === 'string' && !v.startsWith('oklch') && !v.includes(',')) 
+        ? '<span class="s">"' + v + '"</span>'
+        : '<span class="s">"' + v + '"</span>';
+      lines.push('  <span class="n">"' + k + '"</span>: ' + val + comma);
+    });
+    lines.push('};');
+    pv.innerHTML = lines.join('\n');
+  }
+}
+
+const themeToggle = document.getElementById('themeToggle');
+const themeEditor = document.getElementById('themeEditor');
+const themeClose = document.getElementById('themeClose');
+const themeJson = document.getElementById('themeJson');
+const themeStatus = document.getElementById('themeStatus');
+const themeReset = document.getElementById('themeReset');
+const themeCopy = document.getElementById('themeCopy');
+
+function loadTheme() {
+  try {
+    const saved = localStorage.getItem('meshblog_theme');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return PRESETS.paper;
+}
+
+let currentTheme = loadTheme();
+applyTheme(currentTheme);
+themeJson.value = JSON.stringify(currentTheme, null, 2);
+
+themeToggle.addEventListener('click', () => {
+  themeEditor.classList.add('open');
+  themeToggle.style.display = 'none';
+});
+themeClose.addEventListener('click', () => {
+  themeEditor.classList.remove('open');
+  themeToggle.style.display = '';
+});
+
+let debounce;
+themeJson.addEventListener('input', () => {
+  clearTimeout(debounce);
+  debounce = setTimeout(() => {
+    try {
+      const obj = JSON.parse(themeJson.value);
+      applyTheme(obj);
+      currentTheme = obj;
+      themeStatus.textContent = '적용됨 · ' + Object.keys(obj).length + ' keys';
+      themeStatus.className = 'status ok';
+      document.querySelectorAll('.preset').forEach(p => p.classList.remove('active'));
+    } catch(e) {
+      themeStatus.textContent = 'JSON 오류: ' + e.message;
+      themeStatus.className = 'status err';
+    }
+  }, 500);
+});
+
+document.querySelectorAll('.preset').forEach(p => {
+  p.addEventListener('click', () => {
+    const name = p.dataset.preset;
+    const theme = PRESETS[name];
+    applyTheme(theme);
+    currentTheme = theme;
+    themeJson.value = JSON.stringify(theme, null, 2);
+    themeStatus.textContent = 'preset · ' + name;
+    themeStatus.className = 'status ok';
+    document.querySelectorAll('.preset').forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+  });
+});
+
+themeReset.addEventListener('click', () => {
+  applyTheme(PRESETS.paper);
+  currentTheme = PRESETS.paper;
+  themeJson.value = JSON.stringify(PRESETS.paper, null, 2);
+  themeStatus.textContent = '초기화됨';
+  themeStatus.className = 'status ok';
+  document.querySelectorAll('.preset').forEach(x => x.classList.toggle('active', x.dataset.preset === 'paper'));
+});
+
+themeCopy.addEventListener('click', () => {
+  navigator.clipboard.writeText(themeJson.value).then(() => {
+    themeStatus.textContent = '복사됨';
+    themeStatus.className = 'status ok';
+  });
+});
+
+/* qa-card click demo */
+document.querySelectorAll('.qa-card .q').forEach(q => {
+  q.addEventListener('click', () => {
+    q.parentElement.classList.toggle('open');
+  });
+});
+</script>
+
+</body>
+</html>

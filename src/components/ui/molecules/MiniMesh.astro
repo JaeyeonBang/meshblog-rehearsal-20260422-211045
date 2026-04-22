@@ -1,0 +1,119 @@
+---
+interface Node {
+  label: string;
+  x: number;
+  y: number;
+  kind?: 'default' | 'hub' | 'concept' | 'selected';
+  href?: string;
+}
+interface Edge {
+  from: number;
+  to: number;
+}
+interface Props {
+  nodes: Node[];
+  edges: Edge[];
+  size?: 'sm' | 'md';
+}
+const { nodes, edges, size = 'md' } = Astro.props;
+---
+<div class:list={['mini-mesh', size === 'sm' && 'mini-mesh--sm']}>
+  <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+    {edges.map((edge) => {
+      const from = nodes[edge.from];
+      const to = nodes[edge.to];
+      if (!from || !to) return null;
+      return (
+        <line
+          x1={from.x}
+          y1={from.y}
+          x2={to.x}
+          y2={to.y}
+          stroke="currentColor"
+          stroke-width=".4"
+        />
+      );
+    })}
+  </svg>
+  {nodes.map((node) => (
+    node.href ? (
+      <a
+        href={node.href}
+        class:list={['mesh-node', node.kind && node.kind !== 'default' && node.kind]}
+        style={`left:${node.x}%; top:${node.y}%`}
+      >
+        {node.label}
+      </a>
+    ) : (
+      <span
+        class:list={['mesh-node', node.kind && node.kind !== 'default' && node.kind]}
+        style={`left:${node.x}%; top:${node.y}%`}
+      >
+        {node.label}
+      </span>
+    )
+  ))}
+</div>
+
+<style>
+  .mini-mesh {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .mini-mesh svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    color: var(--ink);
+  }
+  .mesh-node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: var(--paper);
+    padding: 3px 8px;
+    font-family: var(--f-sans);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    white-space: nowrap;
+    cursor: default;
+    transition: all var(--dur-fast) var(--ease);
+  }
+  .mesh-node:where(a) {
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .mesh-node:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .mesh-node:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .mesh-node.hub {
+    font-weight: 700;
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+  .mesh-node.selected {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .mesh-node.concept {
+    font-family: var(--f-disp);
+    font-style: italic;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-width: 1px;
+  }
+  .mini-mesh--sm {
+    max-width: 200px;
+  }
+</style>

@@ -1,0 +1,27 @@
+{
+  "source": "stubbed LLM (vitest smoke test)",
+  "note": "T9 (real OpenRouter) deferred — no API key provisioned this run",
+  "tests": {
+    "schema": { "file": "src/lib/rag/__tests__/graph.test.ts", "passed": 4, "failed": 0 },
+    "smoke": { "file": "scripts/__tests__/build-index.test.ts", "passed": 2, "failed": 0 },
+    "total_passed": 6,
+    "total_failed": 0
+  },
+  "astro_build": {
+    "status": "ok",
+    "output": "dist/index.html",
+    "entities_rendered": ["react", "typescript", "nextjs", "prisma", "drizzle", "글쓰기"],
+    "count": 6
+  },
+  "idempotency": {
+    "first_run_processed": 4,
+    "second_run_skipped": 4,
+    "mention_count_delta": 0,
+    "comment": "Patch D2 content_hash skip verified"
+  },
+  "drafts_excluded": {
+    "file": "content/_drafts/04-secret.md",
+    "in_db": false,
+    "mechanism": "underscore-prefix folder filter"
+  }
+}

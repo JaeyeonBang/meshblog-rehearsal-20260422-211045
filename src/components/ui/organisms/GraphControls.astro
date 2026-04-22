@@ -1,0 +1,259 @@
+---
+interface Props {
+  mode: 'note' | 'concept' | 'backlinks';
+  level: 1 | 2 | 3;
+  nodeCount?: number;
+  edgeCount?: number;
+}
+const { mode, level, nodeCount = 0, edgeCount = 0 } = Astro.props;
+
+const levelLabels: Record<1 | 2 | 3, { label: string; title: string }> = {
+  1: { label: 'L1 · 직접', title: 'direct links only' },
+  2: { label: 'L2 · 근처', title: '2-hop neighborhood' },
+  3: { label: 'L3 · 클러스터', title: 'full cluster' },
+}
+---
+<div class="graph-controls">
+  <div class="controls-row">
+    <div class="group">
+      <span class="lab" id="mode-label">mode</span>
+      <div class="btn-group" role="radiogroup" aria-labelledby="mode-label">
+        <button
+          class:list={['seg', mode === 'note' && 'seg--active']}
+          data-mode="note"
+          role="radio"
+          aria-checked={mode === 'note'}
+          title="notes = articles · concepts = extracted ideas"
+        >notes</button>
+        <button
+          class:list={['seg', mode === 'concept' && 'seg--active']}
+          data-mode="concept"
+          role="radio"
+          aria-checked={mode === 'concept'}
+          title="notes = articles · concepts = extracted ideas"
+        >concepts</button>
+        <button
+          class:list={['seg', mode === 'backlinks' && 'seg--active']}
+          data-mode="backlinks"
+          role="radio"
+          aria-checked={mode === 'backlinks'}
+          title="backlinks = inbound wikilink graph"
+        >backlinks</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <span class="lab" id="level-label">level</span>
+      <div class="btn-group" role="radiogroup" aria-labelledby="level-label">
+        {([1, 2, 3] as const).map((l) => (
+          <button
+            class:list={['seg', level === l && 'seg--active']}
+            data-level={l}
+            role="radio"
+            aria-checked={level === l}
+            title={levelLabels[l].title}
+          >{levelLabels[l].label}</button>
+        ))}
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <span class="stats" id="gcStats" aria-live="polite">
+      {nodeCount} nodes · {edgeCount} edges
+    </span>
+
+    <button class="action-btn" id="gcShareBtn" aria-label="Share graph link">share link</button>
+    <button class="action-btn" id="gcListBtn" aria-label="Switch to list view" aria-pressed="false">list view</button>
+  </div>
+  <p class="level-caption">Level · 선택한 노드에서 몇 걸음까지 볼지</p>
+  <span id="gcShareStatus" role="status" aria-live="polite" class="sr-only"></span>
+</div>
+
+<style>
+  /* sr-only utility — visually hidden but accessible to screen readers */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .graph-controls {
+    border-bottom: 1px solid var(--ink);
+    padding: 0;
+    margin-bottom: var(--space-6);
+  }
+
+  .controls-row {
+    display: flex;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    align-items: center;
+    padding: var(--space-3) 0;
+  }
+
+  .group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  /* mono eyebrow label */
+  .lab {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    user-select: none;
+  }
+
+  /* segment button group — borderless cluster with outer 1px frame */
+  .btn-group {
+    display: flex;
+    border: 1px solid var(--ink);
+  }
+
+  .seg {
+    border: 0;
+    background: transparent;
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    padding: 6px 14px;
+    color: var(--ink-3);
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-right: 1px solid var(--ink);
+    /* bottom border reserved for active emphasis */
+    border-bottom: 3px solid transparent;
+    transition:
+      background var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease),
+      border-bottom-color var(--dur-fast) var(--ease);
+    line-height: 1;
+  }
+
+  .seg:last-child {
+    border-right: 0;
+  }
+
+  /* Active: invert + 3px bottom emphasis */
+  .seg--active {
+    background: var(--ink);
+    color: var(--paper);
+    border-bottom-color: var(--ink);
+  }
+
+  /* Hover: full invert (not subtle opacity) */
+  .seg:hover:not(.seg--active) {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .seg:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+  }
+
+  /* spacer pushes stats + action buttons to right */
+  .spacer {
+    flex: 1;
+  }
+
+  /* inline stats — mono eyebrow style */
+  .stats {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+
+  /* action buttons */
+  .action-btn {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    padding: 6px 12px;
+    border: 1px solid var(--ink);
+    cursor: pointer;
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: var(--r-xs);
+    transition:
+      background var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease);
+  }
+
+  .action-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .action-btn[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .action-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  /* level caption — mono eyebrow style, below controls row */
+  .level-caption {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 var(--space-3);
+    padding-bottom: var(--space-2);
+  }
+
+  /* ── Mobile 2-row split at ≤780px ───────────────────────────────── */
+  @media (max-width: 780px) {
+    .controls-row {
+      gap: var(--space-3) var(--space-4);
+    }
+
+    /* spacer becomes a full-width line break between groups and stats row */
+    .controls-row .spacer {
+      flex-basis: 100%;
+      flex: none;
+      height: 0;
+      order: 0;
+    }
+
+    /* mode + level groups stay on row 1 (order before spacer break) */
+    .controls-row .group {
+      order: -1;
+    }
+
+    /* stats moves to row 2, left-aligned, grows to fill space */
+    .controls-row .stats {
+      order: 1;
+      flex: 1;
+      white-space: normal;
+    }
+
+    /* action buttons on row 2, right-aligned */
+    .controls-row .action-btn {
+      order: 2;
+    }
+
+    .level-caption {
+      margin-top: var(--space-2);
+    }
+  }
+</style>

@@ -1,0 +1,41 @@
+---
+interface Props {
+  label: string;
+  count?: string;
+}
+const { label, count } = Astro.props;
+---
+<div class="section-break">
+  <h3>{label}</h3>
+  {count && <span class="count">{count}</span>}
+  <div class="rule" aria-hidden="true"></div>
+</div>
+
+<style>
+  .section-break {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin: 48px 0 16px;
+    padding-top: 28px;
+    border-top: 1px solid var(--ink);
+  }
+  h3 {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .count {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+  .rule {
+    flex: 1;
+  }
+</style>

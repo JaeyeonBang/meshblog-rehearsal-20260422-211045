@@ -1,0 +1,88 @@
+---
+interface Props {
+  noteCount?: number;
+  conceptCount?: number;
+}
+const { noteCount = 0, conceptCount = 0 } = Astro.props;
+---
+<div class="graph-legend">
+  <p class="legend-eyebrow">legend</p>
+  <ul class="legend-list">
+    <li class="legend-item">
+      <svg class="swatch swatch--note" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+        <circle cx="7" cy="7" r="5" />
+      </svg>
+      <span class="legend-label">note</span>
+      <span class="legend-count">{noteCount}</span>
+    </li>
+    <li class="legend-item">
+      <svg class="swatch swatch--concept" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+        <circle cx="7" cy="7" r="6" />
+      </svg>
+      <span class="legend-label">concept</span>
+      <span class="legend-count">{conceptCount}</span>
+    </li>
+  </ul>
+</div>
+
+<style>
+  .graph-legend {
+    border-top: 1px solid var(--ink);
+    padding: var(--space-5) 0 0;
+  }
+
+  .legend-eyebrow {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 var(--space-3);
+  }
+
+  .legend-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  /* outlined circle — note kind */
+  .swatch--note circle {
+    fill: var(--paper);
+    stroke: var(--ink);
+    stroke-width: 1.5;
+  }
+
+  /* filled circle — concept kind */
+  .swatch--concept circle {
+    fill: var(--ink);
+    stroke: none;
+  }
+
+  .legend-label {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    flex: 1;
+  }
+
+  .legend-count {
+    font-family: var(--f-disp);
+    font-size: var(--fs-sm);
+    color: var(--ink);
+    font-weight: 500;
+    min-width: 2ch;
+    text-align: right;
+  }
+</style>

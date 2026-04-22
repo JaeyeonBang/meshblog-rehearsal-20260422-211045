@@ -1,0 +1,53 @@
+# build output
+dist/
+# generated types
+.astro/
+# Playwright
+test-results/
+playwright-report/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.local
+.env.production
+*.log
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# meshblog: build-time RAG index and generated content caches
+.data/
+# PGR-3: .data/qa/ is committed to repo (local gen + commit + CI astro-build)
+!.data/qa/
+!.data/qa/**
+public/qa/
+public/graph/
+
+# Generated artifacts (Phase 3 T7)
+/public/graph/
+/public/og/
+/public/atom.xml
+/public/notes-manifest.json
+/.data/
+
+# local Obsidian vault if symlinked inside repo
+content/.obsidian/
+
+.gstack/
+
+# graphify: knowledge graph output (regenerable via `graphify update .`)
+graphify-out/
+CLAUDE.md.pre-graphify.bak

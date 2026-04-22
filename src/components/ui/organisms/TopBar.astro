@@ -1,0 +1,317 @@
+---
+import { withBase } from '../../../lib/url';
+interface Props {
+  active?: 'posts' | 'notes' | 'graph' | 'about';
+  showSearch?: boolean;
+}
+const { active, showSearch = true } = Astro.props;
+const links = [
+  { key: 'posts', label: 'posts', href: withBase('/posts') },
+  { key: 'notes', label: 'notes', href: withBase('/notes') },
+  { key: 'graph', label: 'graph', href: withBase('/graph') },
+  { key: 'about', label: 'about', href: withBase('/about') },
+] as const;
+---
+<header class="topbar">
+  <a href={withBase('/')} class="logo-link" aria-label="meshblog home">
+    <span class="logo">meshblog<span class="sub">est. 2026</span></span>
+  </a>
+  <div class="spacer"></div>
+  <nav class="nav-links" aria-label="Main navigation">
+    {links.map(link => (
+      <a
+        class:list={['nav-link', active === link.key && 'active']}
+        href={link.href}
+        aria-current={active === link.key ? 'page' : undefined}
+      >{link.label}</a>
+    ))}
+  </nav>
+  <button
+    class="btn btn-sm btn-icon theme-toggle"
+    id="theme-toggle"
+    aria-label="Toggle dark mode"
+    aria-pressed="false"
+    title="Toggle dark / light mode"
+  >
+    <!-- Sun icon (shown in dark mode) -->
+    <svg class="icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+    </svg>
+    <!-- Moon icon (shown in light mode) -->
+    <svg class="icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+    </svg>
+  </button>
+  {showSearch && (
+    <button
+      class="btn btn-sm"
+      aria-label="Open search (⌘K)"
+      onclick="window.dispatchEvent(new Event('cmdk:open'))"
+    >
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <circle cx="7" cy="7" r="4.5"/>
+        <path d="M10.3 10.3L13.5 13.5"/>
+      </svg>
+      <span class="btn-search-label">search <span class="kbd">⌘K</span></span>
+    </button>
+  )}
+</header>
+
+<script>
+  function initThemeToggle() {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function getEffectiveTheme(): 'dark' | 'light' {
+      const stored = localStorage.getItem('theme');
+      if (stored === 'dark' || stored === 'light') return stored as 'dark' | 'light';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function applyTheme(theme: 'dark' | 'light') {
+      document.documentElement.setAttribute('data-theme', theme);
+      btn!.setAttribute('aria-pressed', String(theme === 'dark'));
+    }
+
+    function toggleTheme() {
+      const current = getEffectiveTheme();
+      const next: 'dark' | 'light' = current === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('theme', next);
+      applyTheme(next);
+    }
+
+    // Sync button state with current theme (set by FOUC-prevention script)
+    applyTheme(getEffectiveTheme());
+
+    btn.addEventListener('click', toggleTheme);
+
+    // Update when OS preference changes (only if user hasn't manually overridden)
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (!localStorage.getItem('theme')) {
+        applyTheme(getEffectiveTheme());
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initThemeToggle);
+  document.addEventListener('astro:page-load', initThemeToggle);
+</script>
+
+<style>
+  .topbar {
+    max-width: var(--w-page);
+    margin: 0 auto;
+    padding: 18px var(--space-8) 16px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .logo-link {
+    text-decoration: none;
+    color: inherit;
+  }
+  .logo-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .logo {
+    font-family: var(--f-disp);
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .sub {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--ink-3);
+    letter-spacing: 0.1em;
+    margin-left: 2px;
+    text-transform: uppercase;
+  }
+  .spacer {
+    flex: 1;
+  }
+  .nav-links {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+  }
+  .nav-link {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 8px 16px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    color: var(--ink-3);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -18px;
+    transition: all var(--dur-fast) var(--ease);
+    text-decoration: none;
+  }
+  .nav-link:hover {
+    color: var(--ink);
+  }
+  .nav-link.active {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+    font-weight: 600;
+  }
+  .nav-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .btn {
+    font-family: var(--f-sans);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    padding: 8px 16px;
+    border: 1px solid var(--ink);
+    cursor: pointer;
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: var(--r-xs);
+    transition: all var(--dur-fast) var(--ease);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    letter-spacing: 0.01em;
+  }
+  .btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  .kbd {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    padding: 2px 6px;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--ink-5);
+    letter-spacing: 0.04em;
+  }
+  .btn:hover .kbd {
+    color: var(--paper);
+    background: var(--ink);
+    border-color: var(--ink-5);
+  }
+  /* ── theme toggle ─────────────────────────────────────────────────── */
+  .btn-icon {
+    padding: 6px 10px;
+    gap: 0;
+  }
+  /* In light mode: show moon, hide sun */
+  .theme-toggle .icon-sun  { display: none; }
+  .theme-toggle .icon-moon { display: block; }
+  /* In dark mode: show sun, hide moon */
+  :global([data-theme="dark"]) .theme-toggle .icon-sun  { display: block; }
+  :global([data-theme="dark"]) .theme-toggle .icon-moon { display: none; }
+  /* Prefers dark without override */
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme="light"])) .theme-toggle .icon-sun  { display: block; }
+    :global(:root:not([data-theme="light"])) .theme-toggle .icon-moon { display: none; }
+  }
+
+  /* ── Mobile: 2-row compact layout (≤ 780px) ───────────────────────── */
+  /*
+   * Row 1: logo (left) · spacer · theme toggle · search icon
+   * Row 2: nav links — scrollable single row, full width
+   * No hamburger JS needed; all 4 links remain accessible.
+   */
+  @media (max-width: 780px) {
+    .topbar {
+      flex-wrap: wrap;
+      gap: 0;
+      padding: 14px var(--space-5) 0;
+    }
+    /* Row 1 items: logo + spacer + buttons stay on one line */
+    .logo-link {
+      flex: 0 0 auto;
+    }
+    .spacer {
+      flex: 1 1 auto;
+    }
+    /* Shrink search button to icon-only: hide text + kbd shortcut */
+    .btn-sm .btn-search-label {
+      display: none;
+    }
+    .kbd {
+      display: none;
+    }
+    /* Nav links drop to row 2, full width, scrollable */
+    .nav-links {
+      order: 10;
+      flex: 0 0 100%;
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      margin-top: var(--space-1);
+      border-top: 1px solid var(--rule-soft);
+      /* Prevent nav underline from overlapping the row border */
+      padding-bottom: 0;
+    }
+    .nav-links::-webkit-scrollbar {
+      display: none;
+    }
+    /* Ensure each link meets 44px tap target */
+    .nav-link {
+      min-height: 44px;
+      padding: 10px 14px;
+      /* Reset negative bottom margin used on desktop */
+      margin-bottom: 0;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .nav-link.active {
+      border-bottom-color: var(--ink);
+    }
+    /* Buttons: ensure 44px tap target */
+    .btn,
+    .btn-sm {
+      min-height: 44px;
+      min-width: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  /* ── Compact mobile (≤ 480px) ──────────────────────────────────────── */
+  @media (max-width: 480px) {
+    .topbar {
+      padding: 12px var(--space-4) 0;
+      gap: var(--space-2);
+    }
+    .logo {
+      font-size: 22px;
+    }
+    .sub {
+      display: none;
+    }
+    .nav-link {
+      padding: 10px 10px;
+      font-size: var(--fs-xs);
+    }
+  }
+</style>

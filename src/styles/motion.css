@@ -1,0 +1,62 @@
+/* motion.css — entrance animations, stagger, scroll reveal.
+ * ALL animations are guarded by the prefers-reduced-motion query at the top.
+ * No hex literals. Only tokens from tokens.css.
+ */
+
+/* ── Reduced-motion kill switch (MUST be first) ─────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* ── Entrance: fade up ───────────────────────────────────────────────────── */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  animation: fade-up 320ms ease-out both;
+}
+
+/* ── List stagger ────────────────────────────────────────────────────────── */
+/*
+ * Usage: add class="stagger" to the list container.
+ * Set style="--i: 0", "--i: 1", etc. on each child.
+ * Children animate in with a 40ms delay per index.
+ */
+
+.stagger > * {
+  animation: fade-up 320ms ease-out both;
+  animation-delay: calc(40ms * var(--i, 0));
+}
+
+/* ── Scroll reveal ───────────────────────────────────────────────────────── */
+/*
+ * Usage: add class="reveal" to any element.
+ * An IntersectionObserver script adds class "is-in-view" when it enters the viewport.
+ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
+}
+
+.reveal.is-in-view {
+  opacity: 1;
+  transform: translateY(0);
+}

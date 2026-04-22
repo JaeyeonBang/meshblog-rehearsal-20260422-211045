@@ -1,0 +1,8 @@
+public/og/
+public/favicon.svg
+node_modules/
+dist/
+.astro/
+.data/
+graphify-out/
+bun.lock

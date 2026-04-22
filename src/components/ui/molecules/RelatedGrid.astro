@@ -1,0 +1,125 @@
+---
+interface RelatedItem {
+  kind: 'post' | 'note';
+  number: string;
+  title: string;
+  meta: string;
+  href: string;
+}
+interface Props {
+  items: RelatedItem[];
+}
+const { items } = Astro.props;
+---
+<div class="related-block">
+  <div class="label">related · {items.length}</div>
+  <div class="related-grid">
+    {items.map((item) => (
+      <a class="related-item" href={item.href}>
+        <div class="row1">
+          <span class:list={['kind-badge', item.kind]}>{item.kind}</span>
+          <span class="meta">{item.meta}</span>
+        </div>
+        <div class="t">{item.title}</div>
+      </a>
+    ))}
+  </div>
+</div>
+
+<style>
+  .related-block {
+    margin-top: 48px;
+  }
+  .label {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--ink);
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--ink);
+  }
+  @media (max-width: 640px) {
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .related-item {
+    padding: 16px 18px;
+    border-right: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease);
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .related-item:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .related-item:hover .meta,
+  .related-item:hover .kind-badge {
+    color: var(--paper);
+    border-color: var(--paper);
+  }
+  .related-item:hover .kind-badge.post {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .related-item:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+  }
+  .related-item:nth-child(2n) {
+    border-right: 0;
+  }
+  .related-item:nth-last-child(-n+2) {
+    border-bottom: 0;
+  }
+  .row1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .kind-badge {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1px solid var(--ink);
+    display: inline-block;
+    line-height: 1.6;
+  }
+  .kind-badge.post {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .kind-badge.note {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .meta {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    margin-left: auto;
+    letter-spacing: 0.04em;
+  }
+  .t {
+    font-family: var(--f-disp);
+    font-weight: 500;
+    font-size: var(--fs-md);
+    letter-spacing: -0.005em;
+  }
+</style>

@@ -1,0 +1,170 @@
+---
+// Base.astro — shared HTML shell for all meshblog pages
+//
+// Props:
+//   title       — page <title> (required)
+//   description — meta description (defaults to site tagline)
+//   ogImage     — relative or absolute OG image path (defaults to /og/index.png)
+//   lang        — html[lang] override; auto-detected via AF1 heuristic if omitted
+
+import '../styles/tokens.css'
+import '../styles/fonts.css'
+import '../styles/responsive.css'
+import TopBar from '../components/ui/organisms/TopBar.astro'
+import Footer from '../components/ui/organisms/Footer.astro'
+import CmdK from '../components/ui/organisms/CmdK.astro'
+
+export interface Props {
+  title: string
+  description?: string
+  ogImage?: string
+  lang?: 'ko' | 'en'
+  topBarActive?: 'posts' | 'notes' | 'graph' | 'about'
+}
+
+const {
+  title,
+  description = 'meshblog: personal 2nd brain',
+  ogImage = '/og/index.png',
+  lang: langProp,
+  topBarActive,
+} = Astro.props
+
+// AF1 — lang heuristic: infer from Korean vs Latin char density
+function inferLang(content: unknown): 'ko' | 'en' {
+  const s = typeof content === 'string' ? content : JSON.stringify(content ?? '')
+  const koChars = (s.match(/[\uAC00-\uD7AF]/g) || []).length
+  const enChars = (s.match(/[A-Za-z]/g) || []).length
+  return koChars > enChars ? 'ko' : 'en'
+}
+
+const lang = langProp ?? inferLang(title + ' ' + description)
+
+const siteBase = Astro.site ?? new URL('https://jaeyeonbang.github.io')
+const canonicalUrl = new URL(Astro.url.pathname, siteBase).toString()
+// Prefix base path for public/ assets (e.g. /meshblog/og/index.png)
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, '')
+const ogImagePath = ogImage.startsWith('http') ? ogImage : `${BASE}${ogImage}`
+const ogImageUrl = new URL(ogImagePath, siteBase).toString()
+const atomHref = `${BASE}/atom.xml`
+const faviconHref = `${BASE}/favicon.svg`
+const fontPreloadHref = `${BASE}/fonts/Pretendard-Regular.subset.91.woff2`
+---
+
+<!DOCTYPE html>
+<html lang={lang}>
+  <head>
+    <!-- FOUC prevention: set data-theme before stylesheets paint -->
+    <script is:inline>
+      (function() {
+        var stored = null;
+        try { stored = localStorage.getItem('theme'); } catch(e) {}
+        var theme = (stored === 'dark' || stored === 'light')
+          ? stored
+          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      })();
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href={fontPreloadHref}
+      crossorigin
+    />
+    <!-- Fraunces + JetBrains Mono via Google Fonts (Agent 1 slot) -->
+    <slot name="fonts">
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet"
+      />
+    </slot>
+    <link rel="icon" type="image/svg+xml" href={faviconHref} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:url" content={canonicalUrl} />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Atom feed -->
+    <link rel="alternate" type="application/atom+xml" href={atomHref} title="meshblog posts" />
+
+    <style is:global>
+      /* ── Accessibility utilities ────────────────────────────────── */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .sr-only-focusable:focus,
+      .sr-only-focusable:focus-visible {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0;
+        overflow: visible;
+        clip: auto;
+        white-space: normal;
+      }
+
+      /* ── Minimal body reset ─────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--f-sans);
+        font-size: var(--fs-base);
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      a { color: inherit; text-decoration: none; }
+      button { font-family: inherit; }
+      ::selection { background: var(--ink); color: var(--paper); }
+
+      /* ── Focus ring (a11y) ──────────────────────────────────────── */
+      :focus-visible {
+        outline: 2px solid var(--focus-ring);
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Skip link for keyboard/screen-reader users -->
+    <a href="#main" class="sr-only sr-only-focusable">Skip to main content</a>
+
+    <TopBar active={topBarActive} showSearch={true} />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer />
+    <CmdK />
+  </body>
+</html>

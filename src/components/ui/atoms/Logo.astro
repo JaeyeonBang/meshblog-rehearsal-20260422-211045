@@ -1,0 +1,32 @@
+---
+interface Props {
+  sub?: string;
+}
+const { sub } = Astro.props;
+---
+<span class="logo">
+  meshblog
+  {sub && <span class="sub">{sub}</span>}
+</span>
+
+<style>
+  .logo {
+    font-family: var(--f-disp);
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .sub {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--ink-3);
+    letter-spacing: 0.1em;
+    margin-left: 2px;
+    text-transform: uppercase;
+  }
+</style>

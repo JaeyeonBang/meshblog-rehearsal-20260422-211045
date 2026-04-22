@@ -1,0 +1,42 @@
+name: daily audit
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 09:00 UTC = 18:00 KST, once per day
+  workflow_dispatch:       # allow manual run
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write  # only for the report PR body, no code writes
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Prepare runtime dirs
+        run: mkdir -p .data public/graph public/og
+
+      - name: Build fixture index (populates DB — no API key required)
+        run: FIXTURE_ONLY=1 bun run build-index
+
+      - name: Run audit report
+        run: bun run audit-report -- --out audit-report.md
+
+      # v1 contract: report-only. Artifact upload only — no source writes.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: daily-audit-report
+          path: audit-report.md
+          retention-days: 30

@@ -1,0 +1,411 @@
+---
+import { readFileSync } from 'node:fs'
+import Base from '../../layouts/Base.astro'
+import QAChips from '../../components/QAChips'
+import Breadcrumbs from '../../components/ui/molecules/Breadcrumbs.astro'
+import KindBadge from '../../components/ui/atoms/KindBadge.astro'
+import Tag from '../../components/ui/atoms/Tag.astro'
+import HeroFigure from '../../components/ui/molecules/HeroFigure.astro'
+import PageQa from '../../components/ui/molecules/PageQa.astro'
+import RelatedGrid from '../../components/ui/molecules/RelatedGrid.astro'
+import Pager from '../../components/ui/molecules/Pager.astro'
+import TOC from '../../components/ui/molecules/TOC.astro'
+import MiniMesh from '../../components/ui/molecules/MiniMesh.astro'
+import { renderMarkdownToHtml } from '../../lib/markdown/render'
+import { buildNoteResolver } from '../../lib/markdown/wikilink-resolver'
+import {
+  listPosts,
+  listAllLinkable,
+  getQaForNote,
+  getRelatedNotes,
+  openReadonlyDb,
+} from '../../lib/pages/index'
+import type { QaCard } from '../../lib/pages/index'
+import { estimateReadingMinutes } from '../../lib/reading-time'
+import { getReadingStats } from '../../lib/word-count'
+import { withBase } from '../../lib/url'
+import { injectLedeClass } from '../../lib/lede'
+import '../../styles/article.css'
+
+export async function getStaticPaths() {
+  return listPosts().map((p) => ({
+    params: { slug: p.slug },
+    props: { post: p },
+  }))
+}
+
+const { post } = Astro.props
+
+// Guard: shouldn't happen post-getStaticPaths, but be safe
+if (!post) {
+  return Astro.redirect('/404')
+}
+
+// --- QA cards ---
+const noteQa: QaCard[] = getQaForNote(post.id)
+
+// Concept-tier QA for concepts that this note's entities belong to
+let conceptQa: QaCard[] = []
+const db = openReadonlyDb()
+if (db) {
+  try {
+    const rows = db
+      .prepare(
+        `SELECT q.id, q.tier, q.question, q.answer, q.note_id, q.concept_id
+         FROM qa_cards q
+         JOIN concept_entities ce ON ce.concept_id = q.concept_id
+         JOIN note_entities ne ON ne.entity_id = ce.entity_id
+         WHERE ne.note_id = ? AND q.tier = 'concept'
+         GROUP BY q.id`
+      )
+      .all(post.id) as any[]
+    conceptQa = rows.map((row: any): QaCard => ({
+      id: row.id,
+      tier: row.tier,
+      question: row.question,
+      answer: row.answer,
+      lang: row.lang ?? 'en',
+      scope_id: row.note_id ?? row.concept_id ?? null,
+    }))
+  } finally {
+    db.close()
+  }
+}
+
+const allQa: QaCard[] = [...noteQa, ...conceptQa]
+
+// --- Related notes ---
+const related = getRelatedNotes(post.id, 4)
+
+// --- Notes manifest for resolving hrefs ---
+type ManifestEntry = { id: string; href: string; title: string; folder: string }
+let manifest: Record<string, ManifestEntry> = {}
+try {
+  manifest = JSON.parse(readFileSync('public/notes-manifest.json', 'utf8'))
+} catch {
+  manifest = {}
+}
+
+const resolveHref = (id: string): string => {
+  const href = manifest[id]?.href
+  return href ? withBase(href) : '#'
+}
+
+// --- Metadata ---
+const readingMinutes = estimateReadingMinutes(post.content)
+const { words: wordCount } = getReadingStats(post.content)
+const createdDate = new Date(post.created_at)
+const updatedDate = new Date(post.updated_at)
+const updatedYYYYMM = `${updatedDate.getFullYear()}-${String(updatedDate.getMonth() + 1).padStart(2, '0')}`
+const formattedDate = createdDate.toLocaleDateString('ko-KR', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+const excerpt = post.content.replace(/[#*`_~\[\]]/g, '').slice(0, 160).trimEnd()
+const wikilinkResolver = buildNoteResolver(listAllLinkable())
+const contentHtml = await renderMarkdownToHtml(post.content, {
+  resolver: wikilinkResolver,
+  hrefFor: (slug) => withBase(`/notes/${slug}`),
+})
+
+const ledeHtml = injectLedeClass(contentHtml)
+
+// All posts list for pager
+const allPosts = listPosts()
+const currentIndex = allPosts.findIndex((p) => p.slug === post.slug)
+const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : undefined
+const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : undefined
+
+// Related grid items
+const relatedItems = related.map((r, i) => ({
+  kind: 'note' as const,
+  number: `N / ${String(i + 1).padStart(2, '0')}`,
+  title: r.title,
+  meta: '',
+  href: resolveHref(r.id),
+}))
+
+// TOC items (static scaffold — real TOC requires runtime heading extraction)
+const tocItems = [
+  { label: '도입', level: 1 as const },
+]
+
+// Mini mesh nodes (static scaffold for aside)
+const meshNodes = [
+  { label: 'this', x: 50, y: 52, kind: 'selected' as const },
+  { label: 'llm',   x: 22, y: 28, kind: 'hub' as const },
+  { label: 'graph', x: 80, y: 32, kind: 'hub' as const, href: withBase('/graph') },
+]
+const meshEdges = [
+  { from: 0, to: 1 },
+  { from: 0, to: 2 },
+]
+---
+
+<Base
+  title={post.title}
+  description={excerpt}
+  ogImage={`/og/posts/${post.slug}.png`}
+  topBarActive="posts"
+>
+  <div class="reader-layout">
+    <article class="reader-article fade-up">
+      <Breadcrumbs
+        items={[
+          { label: 'posts', href: withBase('/posts') },
+          { label: post.title },
+        ]}
+      />
+
+      <header class="article-header">
+        <p class="eyebrow">post · {formattedDate}</p>
+        <div class="kind-row">
+          <KindBadge kind="post" number={`P / ${String(currentIndex + 1).padStart(2, '0')}`} />
+          <span class="meta reader-meta">{formattedDate} · {readingMinutes} min read · updated {updatedYYYYMM} · {wordCount} words</span>
+        </div>
+        <h1>{post.title}</h1>
+        {post.tags && post.tags.length > 0 && (
+          <div class="tags">
+            {post.tags.map((tag: string) => (
+              <Tag>{tag}</Tag>
+            ))}
+          </div>
+        )}
+      </header>
+
+      <HeroFigure label={`hero · ${post.slug}`} />
+
+      <div class="prose">
+        <div set:html={ledeHtml} />
+      </div>
+
+      {allQa.length > 0 && (
+        <div class="page-qa-wrapper">
+          <PageQa
+            scope="page"
+            items={allQa.map((q) => ({ question: q.question, answer: q.answer ?? undefined }))}
+          />
+          <QAChips qas={allQa} scope="page" client:visible />
+        </div>
+      )}
+
+      {relatedItems.length > 0 && (
+        <RelatedGrid items={relatedItems} />
+      )}
+
+      <Pager
+        prev={prevPost ? {
+          number: `P / ${String(currentIndex).padStart(2, '0')}`,
+          title: prevPost.title,
+          href: withBase(`/posts/${prevPost.slug}`),
+        } : undefined}
+        next={nextPost ? {
+          number: `P / ${String(currentIndex + 2).padStart(2, '0')}`,
+          title: nextPost.title,
+          href: withBase(`/posts/${nextPost.slug}`),
+        } : undefined}
+      />
+    </article>
+
+    <aside class="reader-aside">
+      <TOC label="contents" items={tocItems} />
+      <TOC label="related mesh" mesh={true}>
+        <MiniMesh nodes={meshNodes} edges={meshEdges} size="sm" />
+      </TOC>
+      {/* TODO: restore "backlinks" when backlinks are aggregated */}
+    </aside>
+  </div>
+</Base>
+
+<!-- TOC scroll-spy: watches headings in .prose, toggles .active on TOC links -->
+<script>
+  (function () {
+    const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.reader-aside a[href^="#"]')
+    if (!tocLinks.length) return
+
+    const headingIds = Array.from(tocLinks)
+      .map((a) => {
+        const id = a.getAttribute('href')?.slice(1)
+        return id ? document.getElementById(id) : null
+      })
+      .filter((el): el is HTMLElement => el !== null)
+
+    if (!headingIds.length) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.id
+          const link = document.querySelector<HTMLAnchorElement>(`.reader-aside a[href="#${id}"]`)
+          if (link) {
+            if (entry.isIntersecting) {
+              link.classList.add('active')
+            } else {
+              link.classList.remove('active')
+            }
+          }
+        })
+      },
+      { rootMargin: '0px 0px -60% 0px', threshold: 0 }
+    )
+
+    headingIds.forEach((el) => observer.observe(el))
+  })()
+</script>
+
+<!-- Scroll reveal for sections below the fold -->
+<script>
+  (function () {
+    const reveals = document.querySelectorAll<HTMLElement>('.reveal')
+    if (!reveals.length) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-in-view')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.1 }
+    )
+    reveals.forEach((el) => observer.observe(el))
+  })()
+</script>
+
+<style is:global>
+  @import '../../styles/motion.css';
+
+  /* ── Lede paragraph ──────────────────────────────────────── */
+  .prose p.lede,
+  .prose > p:first-of-type {
+    font-size: var(--fs-xl);
+    line-height: 1.6;
+    color: var(--ink-2);
+    margin-bottom: 1.6em;
+    font-weight: 400;
+  }
+
+  /* ── Footnotes section ───────────────────────────────────── */
+  .prose .footnotes,
+  .prose section.footnotes {
+    margin-top: var(--space-12);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  .prose .footnotes ol {
+    padding-left: 1.4em;
+    list-style: decimal;
+  }
+
+  .prose .footnotes li {
+    font-family: var(--f-serif);
+    font-size: var(--fs-sm);
+    color: var(--ink-3);
+    line-height: 1.5;
+    margin: 0.4em 0;
+  }
+
+  .prose .footnotes li::before {
+    content: none;
+  }
+
+  .prose .footnotes p {
+    margin: 0;
+    display: inline;
+  }
+
+  /* ── TOC scroll-spy active state ─────────────────────────── */
+  .reader-aside a.active {
+    color: var(--ink);
+    font-weight: 500;
+  }
+</style>
+
+<style>
+  /* ── Reader layout ─────────────────────────────────────────── */
+  .reader-layout {
+    max-width: var(--w-page);
+    margin: 0 auto;
+    padding: 0 var(--space-8) var(--space-24);
+    display: grid;
+    grid-template-columns: 1fr var(--w-reader-side);
+    gap: var(--space-12);
+  }
+
+  @media (max-width: 980px) {
+    .reader-layout {
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+    }
+
+    .reader-aside {
+      order: -1;
+    }
+  }
+
+  /* ── Article header ────────────────────────────────────────── */
+  .article-header {
+    padding: var(--space-5) 0 var(--space-8);
+    border-bottom: 1px solid var(--ink);
+    margin-bottom: var(--space-8);
+  }
+
+  .article-header .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 var(--space-3);
+  }
+
+  .article-header .kind-row {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .article-header .meta {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    letter-spacing: .04em;
+  }
+
+  .article-header h1 {
+    font-family: var(--f-disp);
+    font-weight: 500;
+    font-size: var(--fs-article);
+    line-height: 1.02;
+    margin: 0 0 var(--space-5);
+    letter-spacing: -.02em;
+    max-width: 18ch;
+    font-variation-settings: "opsz" 144;
+    word-break: keep-all;
+  }
+
+  .article-header .tags {
+    margin-top: var(--space-6);
+    display: flex;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+
+  /* ── Reader aside ──────────────────────────────────────────── */
+  .reader-aside {
+    align-self: start;
+    position: sticky;
+    top: 96px;
+    padding-top: var(--space-5);
+  }
+
+  /* ── Page QA wrapper ───────────────────────────────────────── */
+  .page-qa-wrapper {
+    margin-top: var(--space-12);
+  }
+</style>

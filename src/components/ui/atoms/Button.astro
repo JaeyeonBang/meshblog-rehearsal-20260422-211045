@@ -1,0 +1,73 @@
+---
+interface Props {
+  variant?: 'default' | 'primary' | 'ghost' | 'icon';
+  size?: 'md' | 'sm';
+  href?: string;
+  class?: string;
+  type?: 'button' | 'submit' | 'reset';
+  [key: string]: unknown;
+}
+const { variant = 'default', size = 'md', href, class: className, type = 'button', ...rest } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+<Tag
+  class:list={['btn', variant !== 'default' && variant, size === 'sm' && 'btn-sm', className]}
+  href={href}
+  type={href ? undefined : type}
+  {...rest}
+>
+  <slot>Click</slot>
+</Tag>
+
+<style>
+  .btn {
+    font-family: var(--f-sans);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    padding: 8px 16px;
+    border: 1px solid var(--ink);
+    cursor: pointer;
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: var(--r-xs);
+    transition: all var(--dur-fast) var(--ease);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+  }
+  .btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .btn.primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn.primary:hover {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .btn.ghost {
+    border-color: transparent;
+  }
+  .btn.ghost:hover {
+    background: var(--paper-2);
+    color: var(--ink);
+  }
+  .btn.icon {
+    padding: 9px;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+</style>

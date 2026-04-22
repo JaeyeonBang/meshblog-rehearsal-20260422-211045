@@ -1,0 +1,81 @@
+---
+interface PagerItem {
+  number: string;
+  title: string;
+  href: string;
+}
+interface Props {
+  prev?: PagerItem;
+  next?: PagerItem;
+}
+const { prev, next } = Astro.props;
+---
+<nav class="pager" aria-label="Article navigation">
+  {prev ? (
+    <a class="pager-link" href={prev.href}>
+      <div class="dir">← previous · {prev.number}</div>
+      <div class="t">{prev.title}</div>
+    </a>
+  ) : (
+    <span class="pager-link pager-link--empty" aria-hidden="true"></span>
+  )}
+  {next ? (
+    <a class="pager-link next" href={next.href}>
+      <div class="dir">next · {next.number} →</div>
+      <div class="t">{next.title}</div>
+    </a>
+  ) : (
+    <span class="pager-link next pager-link--empty" aria-hidden="true"></span>
+  )}
+</nav>
+
+<style>
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin-top: 64px;
+    border: 1px solid var(--ink);
+  }
+  .pager-link {
+    padding: 22px 24px;
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease);
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .pager-link:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .pager-link:hover .dir {
+    color: var(--paper);
+  }
+  .pager-link:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .pager-link:first-child {
+    border-right: 1px solid var(--ink);
+  }
+  .dir {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+  .t {
+    font-family: var(--f-disp);
+    font-weight: 500;
+    font-size: var(--fs-lg);
+    letter-spacing: -0.01em;
+  }
+  .next {
+    text-align: right;
+  }
+  .pager-link--empty {
+    pointer-events: none;
+  }
+</style>

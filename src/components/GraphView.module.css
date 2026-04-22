@@ -1,0 +1,215 @@
+/* GraphView.module.css — blog-bw graph-canvas mesh-node styles
+ * All colours via SPEC §3 tokens. No hex literals. No --meshblog-*.
+ */
+
+.root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* Entrance: fade in the whole root over 320ms */
+  opacity: 0;
+}
+
+/* ── Entrance animation ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .root {
+    animation: gv-fade-in 320ms var(--ease) forwards;
+  }
+
+  @keyframes gv-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+}
+
+/* Reduced-motion: just show immediately */
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    opacity: 1;
+  }
+}
+
+/* ── SVG canvas ──────────────────────────────────────────────────── */
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Directed graph (backlinks mode): arrowhead colour via currentColor */
+.svgDirected {
+  color: var(--ink);
+}
+
+/* ── Node kinds ──────────────────────────────────────────────────── */
+
+/*
+  note nodes — outlined circle (r=5 default, scaled by pagerank)
+  stroke: var(--ink); fill: var(--paper)
+*/
+.svg :global(.nodes circle[data-kind="note"]),
+.svg :global(.nodes circle:not([data-kind])) {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 1.5px;
+}
+
+/*
+  concept nodes — filled circle (r=7 default, scaled by pagerank)
+  fill: var(--ink); no stroke
+*/
+.svg :global(.nodes circle[data-kind="concept"]) {
+  fill: var(--ink);
+  stroke: none;
+}
+
+/* ── Edge hairlines ──────────────────────────────────────────────── */
+
+.svg :global(.links line) {
+  stroke: var(--ink);
+  stroke-opacity: 0.3;
+  stroke-width: 0.25px;
+}
+
+/* ── Node hover ──────────────────────────────────────────────────── */
+
+.svg :global(.nodes circle:hover) {
+  stroke-width: 2px;
+  cursor: pointer;
+}
+
+/* note on hover: invert (paper → ink background) */
+.svg :global(.nodes circle[data-kind="note"]:hover),
+.svg :global(.nodes circle:not([data-kind]):hover) {
+  fill: var(--ink);
+  stroke: var(--ink);
+}
+
+/* concept on hover: show paper bg (inverse) */
+.svg :global(.nodes circle[data-kind="concept"]:hover) {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2px;
+}
+
+/* ── Node focus ──────────────────────────────────────────────────── */
+
+.svg :global(.nodes circle:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* ── Hover label (show sibling text on circle hover) ────────────── */
+
+/* Labels are always rendered; opacity 0 by default, 1 on parent hover */
+.svg :global(.labels text) {
+  fill: var(--ink);
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+
+.svg :global(.labels text.label--visible) {
+  opacity: 1;
+}
+
+/* Always show label for selected / pinned nodes */
+.svg :global(.nodes circle.selected ~ text),
+.svg :global(.labels text[data-selected="true"]) {
+  opacity: 1;
+}
+
+/* ── Node entrance stagger (capped at 600ms) ─────────────────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .svg :global(.nodes circle) {
+    opacity: 0;
+    animation: node-appear 200ms var(--ease) forwards;
+  }
+
+  @keyframes node-appear {
+    from {
+      opacity: 0;
+      r: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svg :global(.nodes circle) {
+    opacity: 1;
+  }
+}
+
+/* ── Stats line ──────────────────────────────────────────────────── */
+
+.stats {
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  margin-top: var(--space-3);
+  position: absolute;
+  bottom: var(--space-3);
+  left: var(--space-4);
+  pointer-events: none;
+}
+
+/* ── Mobile canvas tuning ────────────────────────────────────────── */
+
+/*
+ * On touch devices: allow native pan/zoom on the canvas container.
+ * The SVG force graph uses pointer events; touch-action: none blocks
+ * native scroll. Allow pan-x/pan-y so the graph uses pointer capture
+ * for drag without blocking page scrolling.
+ */
+@media (max-width: 780px) {
+  .root {
+    touch-action: pan-x pan-y;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Slightly heavier stroke-width for readability on small screens */
+  .svg :global(.nodes circle[data-kind="note"]),
+  .svg :global(.nodes circle:not([data-kind])) {
+    stroke-width: 1.8px;
+  }
+}
+
+/* ── Retry button ────────────────────────────────────────────────── */
+
+.retryBtn {
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  padding: 6px 12px;
+  border: 1px solid var(--ink);
+  cursor: pointer;
+  background: var(--paper);
+  color: var(--ink);
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+  margin-top: var(--space-3);
+  display: inline-block;
+}
+
+.retryBtn:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.retryBtn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}

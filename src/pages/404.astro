@@ -1,0 +1,140 @@
+---
+import Base from '../layouts/Base.astro'
+import Button from '../components/ui/atoms/Button.astro'
+import NoteRow from '../components/ui/molecules/NoteRow.astro'
+import { listPosts, listNotes } from '../lib/pages/index.ts'
+import { withBase } from '../lib/url'
+
+// Pick a few recent items to suggest
+const recentPosts = listPosts().slice(0, 1)
+const recentNotes = listNotes().slice(0, 1)
+---
+
+<Base
+  title="404 — not found"
+  description="This page does not exist. Head back home or search the knowledge graph."
+>
+  <div class="notfound">
+    <div class="box">
+      <div class="code">http · error · 404</div>
+      <div class="big">404</div>
+      <h1>여기엔 아무 노트도 없어요.</h1>
+      <p>이 URL에 해당하는 글 또는 노트를 vault에서 찾을 수 없습니다. 글이 옮겨졌거나, 슬러그가 바뀌었을 수 있어요.</p>
+
+      <Button variant="primary" href={withBase('/')}>← 홈으로</Button>
+
+      <div class="suggests">
+        <div class="suggests-label">혹시 이걸 찾으셨나요?</div>
+
+        {recentPosts.map((post, i) => (
+          <NoteRow
+            number={`P / ${String(i + 1).padStart(2, '0')}`}
+            title={post.title}
+            meta="post"
+            href={withBase(`/posts/${post.slug}`)}
+          />
+        ))}
+
+        {recentNotes.map((note, i) => (
+          <NoteRow
+            number={`N / ${String(i + 1).padStart(2, '0')}`}
+            title={note.title}
+            meta="note"
+            href={withBase(`/notes/${note.slug}`)}
+          />
+        ))}
+
+        <NoteRow
+          number="→"
+          title="전체 그래프 보기"
+          meta="graph"
+          href={withBase('/graph')}
+        />
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  /* ── Not found layout ──────────────────────────────────────── */
+  .notfound {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-10) var(--space-8);
+  }
+
+  /* ── Double-frame box ──────────────────────────────────────── */
+  .box {
+    text-align: left;
+    max-width: 620px;
+    width: 100%;
+    padding: var(--space-12) 56px;
+    border: 1px solid var(--ink);
+    position: relative;
+  }
+
+  .box::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1px solid var(--ink);
+    pointer-events: none;
+  }
+
+  /* ── Error code ────────────────────────────────────────────── */
+  .code {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: var(--space-6);
+  }
+
+  /* ── Big 404 numeral ───────────────────────────────────────── */
+  .big {
+    font-family: var(--f-disp);
+    font-weight: 600;
+    font-size: var(--fs-notfound);
+    line-height: .85;
+    letter-spacing: -.04em;
+    margin: 0 0 var(--space-5);
+    font-variation-settings: "opsz" 144;
+  }
+
+  /* ── Heading and body ──────────────────────────────────────── */
+  .box h1 {
+    font-family: var(--f-disp);
+    font-weight: 600;
+    font-size: 32px;
+    margin: 0 0 var(--space-4);
+    letter-spacing: -.015em;
+  }
+
+  .box > p {
+    font-family: var(--f-serif);
+    font-size: var(--fs-md);
+    color: var(--ink-2);
+    line-height: 1.6;
+    margin: 0 0 var(--space-8);
+    max-width: 48ch;
+  }
+
+  /* ── Suggestions section ───────────────────────────────────── */
+  .suggests {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--ink);
+  }
+
+  .suggests-label {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: var(--space-4);
+  }
+</style>

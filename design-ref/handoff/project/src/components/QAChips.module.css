@@ -1,0 +1,197 @@
+/* QAChips.module.css — scoped styles for the Q&A chips component
+ * All values reference --meshblog-* tokens from src/styles/tokens.css
+ * Zero hex/rgba literals — tokens only.
+ */
+
+/* ── Search input ─────────────────────────────────────────────────── */
+
+.searchInput {
+  display: block;
+  width: 100%;
+  min-height: 44px; /* iOS tap target */
+  padding: var(--meshblog-space-3) var(--meshblog-space-4);
+  font-family: var(--meshblog-font-sans);
+  font-size: var(--meshblog-font-size-base);
+  border: 1px solid var(--meshblog-color-border);
+  border-radius: var(--meshblog-radius-sm);
+  background: var(--meshblog-color-surface);
+  color: var(--meshblog-color-text-primary);
+  outline: none;
+  transition:
+    border-color var(--meshblog-dur-fast) var(--meshblog-ease),
+    box-shadow var(--meshblog-dur-fast) var(--meshblog-ease);
+  margin-bottom: var(--meshblog-space-4);
+}
+
+.searchInput:focus {
+  border-color: var(--meshblog-color-focus-ring);
+  box-shadow: var(--meshblog-shadow-focus);
+}
+
+@media (min-width: 768px) {
+  .searchInput {
+    width: auto;
+    min-width: 320px;
+    max-width: 480px;
+  }
+}
+
+/* ── Card list ────────────────────────────────────────────────────── */
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--meshblog-space-3);
+}
+
+/* ── Individual card (li) ─────────────────────────────────────────── */
+
+.card {
+  padding: var(--meshblog-space-4) var(--meshblog-space-5);
+  border: 1px solid var(--meshblog-color-border);
+  border-radius: var(--meshblog-radius-sm);
+  transition: border-color var(--meshblog-dur-fast) var(--meshblog-ease);
+}
+
+.card:hover {
+  border-color: var(--meshblog-color-accent);
+}
+
+/* ── Question button ──────────────────────────────────────────────── */
+
+.questionBtn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: var(--meshblog-font-size-base);
+  font-weight: 500;
+  color: var(--meshblog-color-text-primary);
+  line-height: 1.5;
+}
+
+.questionBtn:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.questionBtn:focus-visible {
+  outline: 2px solid var(--meshblog-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--meshblog-radius-sm);
+}
+
+/* ── Tier badge (<small>) ─────────────────────────────────────────── */
+
+.tierBadge {
+  display: inline;
+  margin-left: var(--meshblog-space-2);
+  color: var(--meshblog-color-muted);
+  font-family: var(--meshblog-font-sans);
+  font-size: var(--meshblog-font-size-xs);
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+/* ── Answer region ────────────────────────────────────────────────── */
+
+.answerRegion {
+  margin-top: var(--meshblog-space-3);
+  color: var(--meshblog-color-text-secondary);
+  line-height: 1.65;
+}
+
+.answerText {
+  margin: 0;
+}
+
+.answerClamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Expand toggle button ─────────────────────────────────────────── */
+
+.expandBtn {
+  display: inline-block;
+  margin-top: var(--meshblog-space-2);
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: var(--meshblog-font-size-sm);
+  color: var(--meshblog-color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.expandBtn:hover,
+.expandBtn:focus-visible {
+  color: var(--meshblog-color-accent);
+}
+
+.expandBtn:focus-visible {
+  outline: 2px solid var(--meshblog-color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--meshblog-radius-sm);
+}
+
+/* ── Empty state / no-results ─────────────────────────────────────── */
+
+.noResults {
+  padding: var(--meshblog-space-6);
+  text-align: center;
+  color: var(--meshblog-color-muted);
+  font-family: var(--meshblog-font-serif);
+  font-size: var(--meshblog-font-size-sm);
+  font-style: italic;
+}
+
+/* ── Fallback (related links) ─────────────────────────────────────── */
+
+.fallback {
+  margin-top: var(--meshblog-space-3);
+  padding-top: var(--meshblog-space-4);
+  border-top: 1px solid var(--meshblog-color-rule);
+}
+
+.fallbackLabel {
+  margin: 0 0 var(--meshblog-space-3) 0;
+  color: var(--meshblog-color-muted);
+  font-size: var(--meshblog-font-size-sm);
+}
+
+.relatedList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--meshblog-space-2);
+}
+
+.relatedList li::before {
+  content: '→ ';
+  color: var(--meshblog-color-muted);
+}
+
+.relatedList a {
+  color: var(--meshblog-color-accent);
+  text-decoration: none;
+  transition: color var(--meshblog-dur-fast) var(--meshblog-ease);
+}
+
+.relatedList a:hover {
+  color: var(--meshblog-color-accent-hover);
+  text-decoration: underline;
+}

@@ -1,0 +1,65 @@
+---
+interface Props {
+  question: string;
+  answer?: string;
+  open?: boolean;
+}
+const { question, answer, open = false } = Astro.props;
+---
+<div class:list={['qa-card', open && 'open']}>
+  <div class="q">
+    <span class="q-text">{question}</span>
+  </div>
+  {answer && (
+    <div class="a">{answer}</div>
+  )}
+</div>
+
+<style>
+  .qa-card {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    cursor: pointer;
+  }
+  .qa-card:last-child {
+    border-bottom: 0;
+  }
+  .q {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+  }
+  .q-text {
+    font-family: var(--f-serif);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink);
+    flex: 1;
+    line-height: 1.4;
+  }
+  .q::after {
+    content: "+";
+    font-family: var(--f-mono);
+    font-size: 16px;
+    color: var(--ink-3);
+    line-height: 1;
+    font-weight: 300;
+  }
+  .qa-card.open .q::after {
+    content: "−";
+  }
+  .a {
+    font-family: var(--f-serif);
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink-2);
+    margin-top: 10px;
+    display: none;
+    padding-left: 14px;
+    border-left: 3px solid var(--ink);
+  }
+  .qa-card.open .a {
+    display: block;
+  }
+</style>

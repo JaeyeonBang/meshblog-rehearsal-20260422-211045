@@ -1,0 +1,111 @@
+[
+  {
+    "comment": "Single-keyword: 'generics' surfaces the primary note card and concept card",
+    "query": "generics",
+    "expected_ids": [
+      "q0000001-0000-0000-0000-000000000001",
+      "q0000006-0000-0000-0000-000000000001"
+    ]
+  },
+  {
+    "comment": "Partial keyword match: 'Partial' appears verbatim in question",
+    "query": "Partial",
+    "expected_ids": ["q0000001-0000-0000-0000-000000000003"]
+  },
+  {
+    "comment": "Keyword 'constrain' targets the extends/constraint card",
+    "query": "constrain",
+    "expected_ids": ["q0000001-0000-0000-0000-000000000002"]
+  },
+  {
+    "comment": "Single keyword 'Pick' hits the Pick<T,K> card",
+    "query": "Pick",
+    "expected_ids": ["q0000001-0000-0000-0000-000000000005"]
+  },
+  {
+    "comment": "Acronym search: WAL mode appears in question text",
+    "query": "WAL mode",
+    "expected_ids": ["q0000002-0000-0000-0000-000000000001"]
+  },
+  {
+    "comment": "PRAGMA keyword search — exact match in question",
+    "query": "PRAGMA",
+    "expected_ids": ["q0000002-0000-0000-0000-000000000002"]
+  },
+  {
+    "comment": "Package name search: better-sqlite3",
+    "query": "better-sqlite3",
+    "expected_ids": ["q0000002-0000-0000-0000-000000000003"]
+  },
+  {
+    "comment": "Short phrase: prepared statement — performance pattern",
+    "query": "prepared statement",
+    "expected_ids": ["q0000002-0000-0000-0000-000000000004"]
+  },
+  {
+    "comment": "3-letter acronym: RAG matches multiple related cards",
+    "query": "RAG",
+    "expected_ids": [
+      "q0000003-0000-0000-0000-000000000001",
+      "q0000003-0000-0000-0000-000000000005"
+    ]
+  },
+  {
+    "comment": "Numeric keyword: 1536 is specific to the embedding model card",
+    "query": "1536",
+    "expected_ids": ["q0000003-0000-0000-0000-000000000002"]
+  },
+  {
+    "comment": "Two-word phrase: vector store — targets comparison card",
+    "query": "vector store",
+    "expected_ids": ["q0000003-0000-0000-0000-000000000003"]
+  },
+  {
+    "comment": "Hyphenated term: top-k in question verbatim",
+    "query": "top-k",
+    "expected_ids": ["q0000003-0000-0000-0000-000000000004"]
+  },
+  {
+    "comment": "Single noun: hallucination appears in RAG card",
+    "query": "hallucination",
+    "expected_ids": ["q0000003-0000-0000-0000-000000000005"]
+  },
+  {
+    "comment": "Algorithm name: PageRank in both note and meshblog-usage cards",
+    "query": "PageRank",
+    "expected_ids": [
+      "q0000005-0000-0000-0000-000000000001",
+      "q0000005-0000-0000-0000-000000000004"
+    ]
+  },
+  {
+    "comment": "Algorithm name (title-case): Louvain — specific term in question",
+    "query": "Louvain",
+    "expected_ids": ["q0000005-0000-0000-0000-000000000002"]
+  },
+  {
+    "comment": "Library name: graphology — appears verbatim in question",
+    "query": "graphology",
+    "expected_ids": ["q0000005-0000-0000-0000-000000000003"]
+  },
+  {
+    "comment": "Graph metric: centrality concept card",
+    "query": "centrality",
+    "expected_ids": ["q0000005-0000-0000-0000-000000000005"]
+  },
+  {
+    "comment": "Korean TIL acronym — exact acronym in Korean Q&A card",
+    "query": "TIL",
+    "expected_ids": ["q0000004-0000-0000-0000-000000000002"]
+  },
+  {
+    "comment": "Korean keyword: 글쓰기 writing card",
+    "query": "글쓰기",
+    "expected_ids": ["q0000004-0000-0000-0000-000000000001"]
+  },
+  {
+    "comment": "Brand name: meshblog in global tier card",
+    "query": "meshblog",
+    "expected_ids": ["q0000007-0000-0000-0000-000000000001"]
+  }
+]

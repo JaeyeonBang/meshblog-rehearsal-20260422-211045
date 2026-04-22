@@ -1,0 +1,511 @@
+---
+import Base from '../layouts/Base.astro'
+import GraphControls from '../components/ui/organisms/GraphControls.astro'
+import GraphLegend from '../components/ui/molecules/GraphLegend.astro'
+import Button from '../components/ui/atoms/Button.astro'
+import GraphView from '../components/GraphView'
+import { withBase } from '../lib/url'
+---
+
+<Base
+  title="Graph — meshblog"
+  description="Explore the concept graph."
+  ogImage="/og/index.png"
+  topBarActive="graph"
+>
+  <div class="graph-layout">
+    <!-- ── Header ──────────────────────────────────────── -->
+    <div class="graph-header">
+      <h1>Knowledge mesh</h1>
+      <span class="header-meta" id="graphMeta">mode: note · L1</span>
+    </div>
+
+    <!-- ── Controls ───────────────────────────────────── -->
+    <GraphControls mode="note" level={1} />
+
+    <!-- ── Main: canvas + list + sidebar ─────────────── -->
+    <div class="graph-main">
+      <!-- canvas with subtle radial gradient -->
+      <div class="graph-canvas" id="graphCanvas" aria-busy="true">
+        <!-- loading-state shown on initial paint -->
+        <div class="loading-state" id="graphLoadingState" aria-hidden="false">
+          <p class="empty-eyebrow">loading</p>
+          <p class="empty-body">그래프 불러오는 중 · fetching mesh…</p>
+        </div>
+
+        <!-- empty-state shown when graph has no nodes -->
+        <div class="empty-state" id="graphEmptyState" aria-hidden="true">
+          <p class="empty-eyebrow">no nodes</p>
+          <p class="empty-body">Add notes to see the graph.</p>
+        </div>
+
+        <!-- error-state: shown when data fetch fails -->
+        <div class="error-state" id="graphErrorState" aria-hidden="true" hidden>
+          <p class="empty-eyebrow">load failed</p>
+          <p class="empty-body">볼트를 불러오지 못했습니다 · couldn't load the vault.</p>
+          <button class="retry-btn" id="graphRetryBtn">retry</button>
+        </div>
+
+        <GraphView client:only="react" />
+      </div>
+
+      <!-- flat list view — toggled by list button; sibling to canvas -->
+      <section class="graph-list" id="graphList" tabindex="-1" hidden aria-label="graph as list"></section>
+
+      <!-- sidebar: selected info + legend + neighbors -->
+      <aside class="graph-aside" aria-label="Graph sidebar">
+        <div class="block">
+          <div class="block-label">selected · post</div>
+          <h4 id="graphSelectedTitle">—</h4>
+          <p class="block-meta" id="graphSelectedMeta"></p>
+          <p class="block-excerpt" id="graphSelectedExcerpt"></p>
+          <Button variant="primary" size="sm" href="#" id="graphOpenBtn">글 열기 →</Button>
+        </div>
+
+        <div class="block">
+          <div class="block-label">neighbors · <span id="neighborCount">0</span></div>
+          <div id="graphNeighbors" class="neighbors-list">
+            <!-- populated by GraphView via window.updateGraphAside -->
+          </div>
+        </div>
+
+        <div class="block">
+          <GraphLegend noteCount={0} conceptCount={0} />
+        </div>
+      </aside>
+    </div>
+
+    <noscript>
+      <p class="noscript-notice">
+        Graph requires JavaScript. See the <a href={withBase('/')}>home page</a> for latest posts.
+      </p>
+    </noscript>
+  </div>
+</Base>
+
+<script>
+  // ── State cache ──────────────────────────────────────────────────
+  let _graphState: { mode: string; level: number; nodes: unknown[] } | null = null
+
+  // Read state from cache or fall back to URL params
+  function readState() {
+    if (_graphState) return _graphState
+    const params = new URLSearchParams(window.location.search)
+    const mode = params.get('mode') === 'concept' ? 'concept' : 'note'
+    const rawLevel = Number(params.get('level') ?? '1')
+    const level = (rawLevel === 2 || rawLevel === 3) ? rawLevel : 1
+    return { mode, level, nodes: [] as unknown[] }
+  }
+
+  // ── graph:state listener ─────────────────────────────────────────
+  window.addEventListener('graph:state', (e: Event) => {
+    const detail = (e as CustomEvent<{ mode: string; level: number; nodes: unknown[] }>).detail
+    _graphState = detail
+
+    // Update #graphMeta
+    const metaEl = document.getElementById('graphMeta')
+    if (metaEl) metaEl.textContent = `mode: ${detail.mode} · L${detail.level}`
+
+    // Toggle seg--active on mode buttons
+    document.querySelectorAll<HTMLElement>('.graph-controls [data-mode]').forEach(btn => {
+      const isActive = btn.dataset.mode === detail.mode
+      btn.classList.toggle('seg--active', isActive)
+      btn.setAttribute('aria-checked', String(isActive))
+    })
+
+    // Toggle seg--active on level buttons
+    document.querySelectorAll<HTMLElement>('.graph-controls [data-level]').forEach(btn => {
+      const isActive = Number(btn.dataset.level) === detail.level
+      btn.classList.toggle('seg--active', isActive)
+      btn.setAttribute('aria-checked', String(isActive))
+    })
+
+    // If list is currently visible, re-render it with latest nodes
+    const listEl = document.getElementById('graphList')
+    if (listEl && !listEl.hidden) {
+      renderList(detail.nodes as Array<{ id: string; label: string; type: string }>)
+    }
+  })
+
+  // ── Mode button clicks ───────────────────────────────────────────
+  document.addEventListener('click', (e: MouseEvent) => {
+    const target = (e.target as HTMLElement).closest<HTMLElement>('.graph-controls [data-mode]')
+    if (target) {
+      window.dispatchEvent(new CustomEvent('graph:setMode', { detail: target.dataset.mode }))
+    }
+  })
+
+  // ── Level button clicks ──────────────────────────────────────────
+  document.addEventListener('click', (e: MouseEvent) => {
+    const target = (e.target as HTMLElement).closest<HTMLElement>('.graph-controls [data-level]')
+    if (target) {
+      window.dispatchEvent(new CustomEvent('graph:setLevel', { detail: Number(target.dataset.level) }))
+    }
+  })
+
+  // ── Share button ─────────────────────────────────────────────────
+  document.getElementById('gcShareBtn')?.addEventListener('click', async () => {
+    const { mode, level } = readState()
+    const url = `${location.origin}${location.pathname}?mode=${mode}&level=${level}`
+    const shareBtn = document.getElementById('gcShareBtn') as HTMLButtonElement | null
+    const shareStatus = document.getElementById('gcShareStatus')
+    const originalLabel = shareBtn?.textContent ?? 'share link'
+
+    let usedFallback = false
+    try {
+      await navigator.clipboard.writeText(url)
+    } catch {
+      window.prompt('Copy this link:', url)
+      usedFallback = true
+    }
+
+    if (shareStatus) {
+      shareStatus.textContent = usedFallback ? 'copy ready' : 'copied ✓ · 복사 완료'
+    }
+    if (shareBtn && !usedFallback) {
+      shareBtn.textContent = 'copied ✓'
+      setTimeout(() => {
+        shareBtn.textContent = originalLabel
+        if (shareStatus) shareStatus.textContent = ''
+      }, 1500)
+    }
+  })
+
+  // ── List button ──────────────────────────────────────────────────
+  function renderList(nodes: Array<{ id: string; label: string; type: string }>) {
+    const listEl = document.getElementById('graphList')
+    if (!listEl) return
+    if (nodes.length === 0) {
+      listEl.innerHTML = '<p class="gl-empty">no nodes loaded yet</p>'
+      return
+    }
+    listEl.innerHTML = nodes.map(n =>
+      `<div class="gl-row gl-row--${n.type}">` +
+        `<span class="gl-kind">${n.type}</span>` +
+        `<span class="gl-title">${escapeHtml(n.label)}</span>` +
+      `</div>`
+    ).join('')
+  }
+
+  function escapeHtml(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  }
+
+  document.getElementById('gcListBtn')?.addEventListener('click', () => {
+    const listBtn = document.getElementById('gcListBtn') as HTMLButtonElement | null
+    const canvasEl = document.getElementById('graphCanvas')
+    const listEl = document.getElementById('graphList')
+    if (!listBtn || !canvasEl || !listEl) return
+
+    const isPressed = listBtn.getAttribute('aria-pressed') === 'true'
+
+    if (!isPressed) {
+      // Activate list view
+      listBtn.setAttribute('aria-pressed', 'true')
+      canvasEl.hidden = true
+      listEl.hidden = false
+      // Render current nodes
+      const state = readState()
+      renderList((state.nodes as Array<{ id: string; label: string; type: string }>))
+      listEl.focus()
+    } else {
+      // Deactivate list view
+      listBtn.setAttribute('aria-pressed', 'false')
+      listEl.hidden = true
+      canvasEl.hidden = false
+      listBtn.focus()
+    }
+  })
+
+  // ── Retry overlay button ─────────────────────────────────────────
+  document.getElementById('graphRetryBtn')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('graph:retry'))
+  })
+</script>
+
+<style>
+  /* ── Layout ────────────────────────────────────────────── */
+  .graph-layout {
+    max-width: var(--w-page-graph);
+    margin: 0 auto;
+    padding: 0 var(--space-8) var(--space-24);
+  }
+
+  /* ── Header ────────────────────────────────────────────── */
+  .graph-header {
+    padding: var(--space-6) 0 var(--space-5);
+    border-bottom: 1px solid var(--ink);
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    margin-bottom: 0;
+  }
+
+  .graph-header h1 {
+    font-family: var(--f-disp);
+    font-weight: 500;
+    font-size: var(--fs-5xl);
+    margin: 0;
+    letter-spacing: -0.02em;
+    font-variation-settings: "opsz" 144;
+  }
+
+  .header-meta {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    margin-left: auto;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ── Main: canvas + list + aside grid ─────────────────── */
+  .graph-main {
+    display: grid;
+    grid-template-columns: 1fr var(--w-graph-side);
+    gap: 0;
+    /* Taller canvas than before */
+    height: 720px;
+    border: 1px solid var(--ink);
+    overflow: hidden;
+  }
+
+  @media (max-width: 980px) {
+    .graph-main {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+  }
+
+  /* ── Canvas ────────────────────────────────────────────── */
+  .graph-canvas {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    /*
+      Subtle radial gradient: centre is --paper (bright), edges fade to
+      --paper-2 (slightly sunk). Tokens handle light/dark inversion.
+      No hex literals.
+    */
+    background:
+      radial-gradient(
+        ellipse 70% 70% at 50% 50%,
+        var(--paper) 30%,
+        var(--paper-2) 100%
+      );
+  }
+
+  /* ── Loading state ─────────────────────────────────────── */
+  .loading-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    pointer-events: none;
+  }
+
+  .loading-state[aria-hidden="true"] {
+    display: none;
+  }
+
+  /* ── Empty state ───────────────────────────────────────── */
+  .empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    pointer-events: none;
+  }
+
+  .empty-state[aria-hidden="true"] {
+    display: none;
+  }
+
+  .empty-eyebrow {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0;
+  }
+
+  .empty-body {
+    font-family: var(--f-serif);
+    font-size: var(--fs-base);
+    color: var(--ink-4);
+    margin: 0;
+  }
+
+  /* ── Error state ──────────────────────────────────────────── */
+  .error-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    pointer-events: auto;
+  }
+
+  .error-state[hidden] { display: none; }
+
+  .retry-btn {
+    margin-top: var(--space-4);
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border: 1px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    border-radius: var(--r-xs);
+    transition:
+      background var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease);
+  }
+
+  .retry-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .retry-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  /* ── Graph list (toggle view) ──────────────────────────── */
+  .graph-list {
+    grid-column: 1;
+    overflow-y: auto;
+    padding: var(--space-5) var(--space-6);
+    outline: none;
+  }
+
+  .graph-list[hidden] { display: none; }
+
+  .gl-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--ink-5);
+    cursor: default;
+  }
+
+  .gl-row a {
+    display: contents;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .gl-row a:hover .gl-title,
+  .gl-row a:hover .gl-kind {
+    color: var(--paper);
+  }
+
+  .gl-row a:hover {
+    background: var(--ink);
+  }
+
+  .gl-kind {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    min-width: 5em;
+    flex-shrink: 0;
+  }
+
+  .gl-title {
+    font-family: var(--f-serif);
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+  }
+
+  .gl-empty {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: var(--space-4) 0;
+    text-align: center;
+  }
+
+  /* ── Aside ─────────────────────────────────────────────── */
+  .graph-aside {
+    border-left: 1px solid var(--ink);
+    overflow-y: auto;
+    background: var(--paper-2);
+  }
+
+  .block {
+    padding: var(--space-5) 22px;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .block:last-child {
+    border-bottom: 0;
+  }
+
+  .block-label {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: var(--space-3);
+  }
+
+  .graph-aside h4 {
+    font-family: var(--f-disp);
+    font-weight: 600;
+    font-size: var(--fs-lg);
+    margin: 0 0 var(--space-1);
+    letter-spacing: -0.01em;
+  }
+
+  .block-meta {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    margin: 2px 0 var(--space-4);
+    letter-spacing: 0.04em;
+  }
+
+  .block-excerpt {
+    font-family: var(--f-serif);
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    line-height: 1.55;
+    margin: 0 0 var(--space-4);
+  }
+
+  /* ── Neighbors list ────────────────────────────────────── */
+  .neighbors-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Noscript ──────────────────────────────────────────── */
+  .noscript-notice {
+    font-family: var(--f-serif);
+    font-size: var(--fs-base);
+    color: var(--ink-3);
+    margin-top: var(--space-6);
+  }
+</style>

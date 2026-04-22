@@ -1,0 +1,53 @@
+---
+interface Props {
+  show?: boolean;
+}
+const { show = false } = Astro.props;
+---
+{show && (
+  <nav class="page-nav" aria-label="Dev route switcher">
+    <button data-page="home">/</button>
+    <button data-page="post">/posts/[slug]</button>
+    <button data-page="note">/notes/[slug]</button>
+    <button data-page="graph">/graph</button>
+    <button data-page="search">search ⌘K</button>
+    <button data-page="notfound">404</button>
+  </nav>
+)}
+
+<style>
+  .page-nav {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 60;
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 3px;
+    display: flex;
+    gap: 0;
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+  }
+  .page-nav button {
+    padding: 7px 14px;
+    border: 0;
+    background: transparent;
+    color: var(--ink-3);
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all var(--dur-fast) var(--ease);
+  }
+  .page-nav button:hover {
+    color: var(--ink);
+  }
+  .page-nav button.active {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .page-nav button:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: -2px;
+  }
+</style>

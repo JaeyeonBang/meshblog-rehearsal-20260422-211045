@@ -1,0 +1,488 @@
+---
+import Base from '../../layouts/Base.astro'
+import QAChips from '../../components/QAChips.tsx'
+import Breadcrumbs from '../../components/ui/molecules/Breadcrumbs.astro'
+import KindBadge from '../../components/ui/atoms/KindBadge.astro'
+import Tag from '../../components/ui/atoms/Tag.astro'
+import PageQa from '../../components/ui/molecules/PageQa.astro'
+import RelatedGrid from '../../components/ui/molecules/RelatedGrid.astro'
+import Pager from '../../components/ui/molecules/Pager.astro'
+import TOC from '../../components/ui/molecules/TOC.astro'
+import MiniMesh from '../../components/ui/molecules/MiniMesh.astro'
+import { renderMarkdownToHtml } from '../../lib/markdown/render'
+import { buildNoteResolver } from '../../lib/markdown/wikilink-resolver'
+import {
+  listNotes,
+  listAllLinkable,
+  getQaForNote,
+  getRelatedNotes,
+  getBacklinksForNote,
+  openReadonlyDb,
+} from '../../lib/pages/index.ts'
+import type { NoteRow, QaCard, RelatedNote, Backlink } from '../../lib/pages/index.ts'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
+import { estimateReadingMinutes } from '../../lib/reading-time'
+import { getReadingStats } from '../../lib/word-count'
+import { withBase } from '../../lib/url'
+import { injectLedeClass } from '../../lib/lede'
+import '../../styles/article.css'
+
+export function getStaticPaths() {
+  const notes = listNotes()
+  return notes.map((n) => ({
+    params: { slug: n.slug },
+    props: { note: n },
+  }))
+}
+
+interface Props {
+  note: NoteRow
+}
+
+const { note } = Astro.props
+
+// Fetch note-tier QA cards
+const noteQa: QaCard[] = getQaForNote(note.id)
+
+// Fetch concept-tier QA cards via inline SQL
+let conceptQa: QaCard[] = []
+const db = openReadonlyDb()
+if (db) {
+  try {
+    const rows = db
+      .prepare(
+        `SELECT q.id, q.tier, q.question, q.answer, q.note_id, q.concept_id
+         FROM qa_cards q
+         JOIN concept_entities ce ON ce.concept_id = q.concept_id
+         JOIN note_entities ne ON ne.entity_id = ce.entity_id
+         WHERE ne.note_id = ? AND q.tier = 'concept'
+         GROUP BY q.id`
+      )
+      .all(note.id) as any[]
+    conceptQa = rows.map((row) => ({
+      id: row.id,
+      tier: row.tier as 'concept',
+      question: row.question,
+      answer: row.answer,
+      lang: row.lang ?? 'en',
+      scope_id: row.concept_id ?? null,
+    }))
+  } finally {
+    db.close()
+  }
+}
+
+const allQa: QaCard[] = [...noteQa, ...conceptQa]
+
+// Fetch related notes
+const related: RelatedNote[] = getRelatedNotes(note.id, 4)
+
+// Fetch backlinks (inbound wikilinks to this note)
+const backlinks: Backlink[] = getBacklinksForNote(note.id, 10)
+
+// Read manifest for resolving hrefs
+type ManifestEntry = { id: string; href: string; title: string; folder: string }
+type Manifest = Record<string, ManifestEntry>
+
+let manifest: Manifest = {}
+try {
+  const manifestPath = join(
+    fileURLToPath(new URL('../../../public/notes-manifest.json', import.meta.url))
+  )
+  manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as Manifest
+} catch {
+  // manifest not found — hrefs will fall back to /notes/<slug>/
+}
+
+function resolveHref(id: string, slug: string): string {
+  const entry = manifest[id]
+  return withBase(entry?.href ?? `/notes/${slug}/`)
+}
+
+// --- Metadata ---
+const readingMinutes = estimateReadingMinutes(note.content)
+const { words: wordCount } = getReadingStats(note.content)
+const updatedDate = new Date(note.updated_at)
+const updatedYYYYMM = `${updatedDate.getFullYear()}-${String(updatedDate.getMonth() + 1).padStart(2, '0')}`
+const excerpt = note.content.replace(/[#*`_~\[\]]/g, '').slice(0, 160).trimEnd()
+const wikilinkResolver = buildNoteResolver(listAllLinkable())
+const contentHtml = await renderMarkdownToHtml(note.content, {
+  resolver: wikilinkResolver,
+  hrefFor: (slug) => withBase(`/notes/${slug}`),
+})
+
+const ledeHtml = injectLedeClass(contentHtml)
+
+// All notes for pager
+const allNotes = listNotes()
+const currentIndex = allNotes.findIndex((n) => n.slug === note.slug)
+const prevNote = currentIndex > 0 ? allNotes[currentIndex - 1] : undefined
+const nextNote = currentIndex < allNotes.length - 1 ? allNotes[currentIndex + 1] : undefined
+
+// Related grid items
+const relatedItems = related.map((r, i) => ({
+  kind: 'note' as const,
+  number: `N / ${String(i + 1).padStart(2, '0')}`,
+  title: r.title,
+  meta: '',
+  href: resolveHref(r.id, r.slug),
+}))
+
+// Mini mesh for aside
+const meshNodes = [
+  { label: 'this note', x: 50, y: 50, kind: 'selected' as const },
+  { label: 'related',   x: 28, y: 28 },
+  { label: 'graph',     x: 78, y: 35, kind: 'hub' as const, href: withBase('/graph') },
+]
+const meshEdges = [
+  { from: 0, to: 1 },
+  { from: 0, to: 2 },
+]
+---
+
+<Base
+  title={note.title}
+  description={excerpt}
+  ogImage={`/og/notes/${note.slug}.png`}
+  topBarActive="notes"
+>
+  <div class="reader-layout">
+    <article class="reader-article fade-up">
+      <Breadcrumbs
+        items={[
+          { label: 'notes', href: withBase('/notes') },
+          { label: note.title },
+        ]}
+      />
+
+      <header class="article-header">
+        <p class="eyebrow">note · {`N / ${String(currentIndex + 1).padStart(2, '0')}`}</p>
+        <div class="kind-row">
+          <KindBadge kind="note" number={`N / ${String(currentIndex + 1).padStart(2, '0')}`} />
+          <span class="meta reader-meta">{readingMinutes} min · updated {updatedYYYYMM} · {wordCount} words</span>
+        </div>
+        <h1>{note.title}</h1>
+        {note.tags && note.tags.length > 0 && (
+          <div class="tags">
+            {note.tags.map((tag: string) => (
+              <Tag>{tag}</Tag>
+            ))}
+          </div>
+        )}
+      </header>
+
+      <!-- Note variant: no HeroFigure, prose width 52ch -->
+      <div class="prose note-prose">
+        <div set:html={ledeHtml} />
+      </div>
+
+      {allQa.length > 0 && (
+        <div class="page-qa-wrapper">
+          <PageQa
+            scope="note"
+            items={allQa.map((q) => ({ question: q.question, answer: q.answer ?? undefined }))}
+          />
+          <QAChips qas={allQa} scope="page" client:visible />
+        </div>
+      )}
+
+      {relatedItems.length > 0 && (
+        <RelatedGrid items={relatedItems} />
+      )}
+
+      <Pager
+        prev={prevNote ? {
+          number: `N / ${String(currentIndex).padStart(2, '0')}`,
+          title: prevNote.title,
+          href: withBase(`/notes/${prevNote.slug}`),
+        } : undefined}
+        next={nextNote ? {
+          number: `N / ${String(currentIndex + 2).padStart(2, '0')}`,
+          title: nextNote.title,
+          href: withBase(`/notes/${nextNote.slug}`),
+        } : undefined}
+      />
+    </article>
+
+    <aside class="reader-aside">
+      {backlinks.length > 0 && (
+        <section aria-label="backlinks" class="backlinks-section">
+          <h3 class="mono-eyebrow">referenced by · {backlinks.length}</h3>
+          <ul>
+            {backlinks.map((b) => (
+              <li><a href={withBase(`/notes/${b.source_slug}`)}>{b.alias || b.source_title}</a></li>
+            ))}
+          </ul>
+        </section>
+      )}
+      <TOC label="concepts">
+        {note.tags && note.tags.map((tag: string) => (
+          <Tag>{tag}</Tag>
+        ))}
+      </TOC>
+      <TOC label="position in mesh" mesh={true}>
+        <MiniMesh nodes={meshNodes} edges={meshEdges} size="sm" />
+      </TOC>
+    </aside>
+  </div>
+</Base>
+
+<!-- TOC scroll-spy: watches headings in .prose, toggles .active on TOC links -->
+<script>
+  (function () {
+    const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.reader-aside a[href^="#"]')
+    if (!tocLinks.length) return
+
+    const headingIds = Array.from(tocLinks)
+      .map((a) => {
+        const id = a.getAttribute('href')?.slice(1)
+        return id ? document.getElementById(id) : null
+      })
+      .filter((el): el is HTMLElement => el !== null)
+
+    if (!headingIds.length) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.id
+          const link = document.querySelector<HTMLAnchorElement>(`.reader-aside a[href="#${id}"]`)
+          if (link) {
+            if (entry.isIntersecting) {
+              link.classList.add('active')
+            } else {
+              link.classList.remove('active')
+            }
+          }
+        })
+      },
+      { rootMargin: '0px 0px -60% 0px', threshold: 0 }
+    )
+
+    headingIds.forEach((el) => observer.observe(el))
+  })()
+</script>
+
+<!-- Scroll reveal for sections below the fold -->
+<script>
+  (function () {
+    const reveals = document.querySelectorAll<HTMLElement>('.reveal')
+    if (!reveals.length) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-in-view')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.1 }
+    )
+    reveals.forEach((el) => observer.observe(el))
+  })()
+</script>
+
+<style is:global>
+  @import '../../styles/motion.css';
+
+  /* ── Lede paragraph ──────────────────────────────────────── */
+  .prose p.lede,
+  .prose > p:first-of-type {
+    font-size: var(--fs-xl);
+    line-height: 1.6;
+    color: var(--ink-2);
+    margin-bottom: 1.6em;
+    font-weight: 400;
+  }
+
+  /* ── Footnotes section ───────────────────────────────────── */
+  .prose .footnotes,
+  .prose section.footnotes {
+    margin-top: var(--space-12);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  .prose .footnotes ol {
+    padding-left: 1.4em;
+    list-style: decimal;
+  }
+
+  .prose .footnotes li {
+    font-family: var(--f-serif);
+    font-size: var(--fs-sm);
+    color: var(--ink-3);
+    line-height: 1.5;
+    margin: 0.4em 0;
+  }
+
+  .prose .footnotes li::before {
+    content: none;
+  }
+
+  .prose .footnotes p {
+    margin: 0;
+    display: inline;
+  }
+
+  /* ── TOC scroll-spy active state ─────────────────────────── */
+  .reader-aside a.active {
+    color: var(--ink);
+    font-weight: 500;
+  }
+</style>
+
+<style>
+  /* ── Reader layout ─────────────────────────────────────────── */
+  .reader-layout {
+    max-width: var(--w-page);
+    margin: 0 auto;
+    padding: 0 var(--space-8) var(--space-24);
+    display: grid;
+    grid-template-columns: 1fr var(--w-reader-side);
+    gap: var(--space-12);
+  }
+
+  @media (max-width: 980px) {
+    .reader-layout {
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+    }
+
+    .reader-aside {
+      order: -1;
+    }
+  }
+
+  /* ── Article header ────────────────────────────────────────── */
+  .article-header {
+    padding: var(--space-5) 0 var(--space-8);
+    border-bottom: 1px solid var(--ink);
+    margin-bottom: var(--space-8);
+  }
+
+  .article-header .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 var(--space-3);
+  }
+
+  .article-header .kind-row {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .article-header .meta {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    letter-spacing: .04em;
+  }
+
+  .article-header h1 {
+    font-family: var(--f-disp);
+    font-weight: 500;
+    font-size: clamp(36px, 4vw, 52px);
+    line-height: 1.05;
+    margin: 0 0 var(--space-5);
+    letter-spacing: -.02em;
+    word-break: keep-all;
+  }
+
+  .article-header .tags {
+    margin-top: var(--space-6);
+    display: flex;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+
+  /* ── Note prose — 52ch (narrower than post) ────────────────── */
+  .note-prose {
+    max-width: 52ch;
+  }
+
+  /* ── Reader aside ──────────────────────────────────────────── */
+  .reader-aside {
+    align-self: start;
+    position: sticky;
+    top: 96px;
+    padding-top: var(--space-5);
+  }
+
+  /* ── Page QA wrapper ───────────────────────────────────────── */
+  .page-qa-wrapper {
+    margin-top: var(--space-12);
+  }
+
+  /* ── Backlinks sidebar section ─────────────────────────────── */
+  .backlinks-section {
+    margin-bottom: 36px;
+  }
+
+  .backlinks-section .mono-eyebrow {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--ink);
+    font-weight: 400;
+  }
+
+  .backlinks-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .backlinks-section li {
+    font-family: var(--f-serif);
+    font-size: 14px;
+    padding: 5px 0;
+    color: var(--ink-3);
+    position: relative;
+    padding-left: 18px;
+    transition: color var(--dur-fast) var(--ease);
+    line-height: 1.3;
+  }
+
+  .backlinks-section li::before {
+    content: "‹";
+    font-family: var(--f-mono);
+    position: absolute;
+    left: 0;
+    color: var(--ink-4);
+    font-size: 12px;
+  }
+
+  .backlinks-section li:hover {
+    color: var(--ink);
+  }
+
+  .backlinks-section a {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+  }
+
+  .backlinks-section a:hover {
+    color: var(--ink);
+    background: var(--paper);
+  }
+
+  .backlinks-section a:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+</style>

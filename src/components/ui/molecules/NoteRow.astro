@@ -1,0 +1,73 @@
+---
+import Badge from '../atoms/Badge.astro'
+
+interface Props {
+  number: string;
+  title: string;
+  meta: string;
+  href: string;
+  badge?: 'new' | 'updated' | null;
+}
+const { number, title, meta, href, badge = null } = Astro.props;
+---
+<a class="note-row" href={href}>
+  <span class="num">{number}</span>
+  <span class="title-wrap">
+    <h4>{title}</h4>
+    {badge && (
+      <Badge variant={badge}>{badge === 'new' ? 'NEW' : 'UPDATED'}</Badge>
+    )}
+  </span>
+  <span class="nmeta">{meta}</span>
+</a>
+
+<style>
+  .note-row {
+    padding: 14px 16px 14px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 18px;
+    align-items: center;
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease);
+    margin-right: -16px;
+    padding-right: 16px;
+    text-decoration: none;
+    color: inherit;
+  }
+  .note-row:hover {
+    background: var(--paper-2);
+    padding-left: 16px;
+    margin-left: -16px;
+  }
+  .note-row:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .num {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+  .title-wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+  h4 {
+    font-family: var(--f-disp);
+    font-size: var(--fs-lg);
+    font-weight: 500;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .nmeta {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    letter-spacing: 0.04em;
+  }
+</style>

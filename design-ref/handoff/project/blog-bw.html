@@ -1,0 +1,1628 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>meshblog — black & white</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,400;1,9..144,500&family=Pretendard:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   meshblog · black & white edition
+   editorial / swiss-inspired · hairlines only · no shadows
+============================================================ */
+:root {
+  --ink:       #000;
+  --ink-2:     #1a1a1a;
+  --ink-3:     #555;
+  --ink-4:     #888;
+  --ink-5:     #bbb;
+  --paper:     #fff;
+  --paper-2:   #f6f6f4;
+  --rule:      #000;
+  --rule-soft: #d9d9d6;
+  --accent:    #000;   /* B&W = everything is the accent */
+
+  --f-disp:  'Fraunces', 'Pretendard', Georgia, serif;
+  --f-serif: 'Fraunces', 'Pretendard', Georgia, serif;
+  --f-sans:  'Pretendard', -apple-system, system-ui, sans-serif;
+  --f-mono:  'JetBrains Mono', ui-monospace, Menlo, monospace;
+
+  --r-xs: 0px; --r-sm: 2px; --r-md: 4px; --r-pill: 999px;
+  --ease: cubic-bezier(.22,1,.36,1);
+  --dur-fast: 140ms; --dur: 240ms;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); font-family: var(--f-sans); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+::selection { background: var(--ink); color: var(--paper); }
+
+/* ─── route switcher (top) ─── */
+.page-nav {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  z-index: 60;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  padding: 3px;
+  display: flex; gap: 0;
+  font-family: var(--f-mono); font-size: 11px;
+}
+.page-nav button {
+  padding: 7px 14px; border: 0; background: transparent; color: var(--ink-3);
+  cursor: pointer; letter-spacing: .04em;
+  transition: all var(--dur-fast) var(--ease);
+}
+.page-nav button:hover { color: var(--ink); }
+.page-nav button.active { background: var(--ink); color: var(--paper); }
+
+.page { display: none; padding-top: 72px; min-height: 100vh; }
+.page.active { display: block; }
+
+/* ─── topbar ─── */
+.topbar {
+  max-width: 1280px; margin: 0 auto;
+  padding: 18px 32px 16px;
+  display: flex; align-items: center; gap: 18px;
+  border-bottom: 1px solid var(--ink);
+}
+.topbar .spacer { flex: 1; }
+.logo {
+  font-family: var(--f-disp); font-weight: 800; font-size: 26px;
+  letter-spacing: -.02em; line-height: 1;
+  display: inline-flex; align-items: baseline; gap: 6px;
+}
+.logo .slash { font-weight: 400; color: var(--ink-3); }
+.logo .sub { font-family: var(--f-mono); font-size: 10px; font-weight: 500; color: var(--ink-3); letter-spacing: .1em; margin-left: 2px; text-transform: uppercase; }
+
+.nav-links { display: flex; gap: 0; align-items: stretch; }
+.nav-link {
+  font-family: var(--f-sans); font-size: 13px; font-weight: 500;
+  padding: 8px 16px; color: var(--ink-3); cursor: pointer;
+  letter-spacing: .01em;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -17px;
+  transition: all var(--dur-fast) var(--ease);
+}
+.nav-link:hover { color: var(--ink); }
+.nav-link.active { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+
+.btn {
+  font-family: var(--f-sans); font-size: 13px; font-weight: 500;
+  padding: 8px 16px; border: 1px solid var(--ink); cursor: pointer;
+  background: var(--paper); color: var(--ink);
+  border-radius: 0; transition: all var(--dur-fast) var(--ease);
+  display: inline-flex; align-items: center; gap: 7px;
+  letter-spacing: .01em;
+}
+.btn:hover { background: var(--ink); color: var(--paper); }
+.btn.primary { background: var(--ink); color: var(--paper); }
+.btn.primary:hover { background: var(--paper); color: var(--ink); }
+.btn.ghost { border-color: transparent; }
+.btn.ghost:hover { background: var(--paper-2); color: var(--ink); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn.icon { padding: 7px; width: 32px; height: 32px; justify-content: center; }
+
+.input {
+  font-family: var(--f-sans); font-size: 14px; width: 100%;
+  padding: 10px 16px;
+  border: 1px solid var(--ink); background: var(--paper); color: var(--ink);
+  border-radius: 0; outline: none;
+  transition: background var(--dur-fast) var(--ease);
+}
+.input::placeholder { color: var(--ink-4); }
+.input:focus { background: var(--paper-2); }
+.search { position: relative; display: flex; align-items: center; }
+.search .ico { position: absolute; left: 12px; color: var(--ink-3); pointer-events: none; display: flex; }
+.search .input { padding-left: 38px; }
+.kbd {
+  font-family: var(--f-mono); font-size: 10px; padding: 2px 6px;
+  color: var(--ink); background: var(--paper);
+  border: 1px solid var(--ink-5); letter-spacing: .04em;
+}
+
+/* badges · pure B/W */
+.kind-badge {
+  font-family: var(--f-mono); font-size: 10px; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase;
+  padding: 2px 8px;
+  border: 1px solid var(--ink);
+  display: inline-block; line-height: 1.6;
+}
+.kind-badge.post { background: var(--ink); color: var(--paper); }
+.kind-badge.note { background: var(--paper); color: var(--ink); }
+
+.tier-badge {
+  font-family: var(--f-mono); font-size: 9px; font-weight: 500;
+  letter-spacing: .14em; text-transform: uppercase;
+  padding: 1px 6px;
+  display: inline-block; line-height: 1.6;
+}
+.tier-badge.note    { border: 1px solid var(--ink-5); color: var(--ink-3); }
+.tier-badge.concept { border: 1px solid var(--ink); color: var(--ink); }
+.tier-badge.global  { background: var(--ink); color: var(--paper); }
+
+.tag {
+  font-family: var(--f-mono); font-size: 11px;
+  padding: 2px 8px 3px;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--ink-5);
+  display: inline-block; cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+}
+.tag:hover { color: var(--ink); border-bottom-color: var(--ink); }
+.tag.selected { color: var(--ink); border-bottom-color: var(--ink); font-weight: 500; }
+
+/* ============================================================
+   HOME
+============================================================ */
+.home-layout {
+  max-width: 1280px; margin: 0 auto;
+  padding: 0 32px 96px;
+  display: grid; grid-template-columns: 1fr 320px;
+  gap: 0;
+}
+@media (max-width: 980px) { .home-layout { grid-template-columns: 1fr; } }
+
+.home-main { padding-right: 56px; border-right: 1px solid var(--ink); padding-bottom: 80px; }
+.home-side { padding: 40px 0 0 40px; }
+@media (max-width: 980px) { .home-main { padding-right: 0; border-right: 0; } .home-side { padding: 0; border-top: 1px solid var(--ink); margin-top: 40px; padding-top: 40px; } }
+
+.home-hero {
+  padding: 56px 0 40px;
+  border-bottom: 1px solid var(--ink);
+  margin-bottom: 48px;
+}
+.home-hero .eyebrow {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.home-hero .eyebrow::before { content: ""; display: inline-block; width: 24px; height: 1px; background: var(--ink); }
+.home-hero h1 {
+  font-family: var(--f-disp); font-weight: 500;
+  font-size: clamp(44px, 6vw, 82px);
+  line-height: .96; margin: 0 0 24px;
+  letter-spacing: -.025em;
+  max-width: 14ch;
+  font-variation-settings: "opsz" 144;
+}
+.home-hero h1 em { font-style: italic; font-weight: 400; font-family: var(--f-disp); }
+.home-hero .sub {
+  font-family: var(--f-serif); font-size: 20px;
+  color: var(--ink-2); line-height: 1.5;
+  max-width: 52ch;
+  font-weight: 400;
+}
+
+.feed { display: flex; flex-direction: column; }
+.post-card {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+  margin: 0 -16px; padding-left: 16px; padding-right: 16px;
+}
+.post-card:hover { background: var(--paper-2); }
+.post-card:first-child { padding-top: 0; }
+.post-card .head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.post-card .meta { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); margin-left: auto; letter-spacing: .04em; }
+.post-card h2 {
+  font-family: var(--f-disp); font-weight: 600; font-size: 34px;
+  line-height: 1.1; margin: 0 0 12px;
+  letter-spacing: -.015em;
+}
+.post-card h2.sm { font-size: 24px; }
+.post-card .excerpt {
+  font-family: var(--f-serif); font-size: 16px;
+  color: var(--ink-2); line-height: 1.55;
+  max-width: 58ch;
+}
+.post-card .tags { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+.post-card.with-thumb {
+  display: grid; grid-template-columns: 160px 1fr; gap: 28px; align-items: start;
+}
+.post-card .thumb {
+  aspect-ratio: 4/3;
+  border: 1px solid var(--ink);
+  background: repeating-linear-gradient(135deg, transparent 0, transparent 5px, var(--ink-5) 5px, var(--ink-5) 6px), var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-mono); font-size: 10px; color: var(--ink);
+  letter-spacing: .1em;
+}
+.post-card .thumb span { background: var(--paper); padding: 2px 6px; }
+
+.section-break {
+  display: flex; align-items: baseline; gap: 14px;
+  margin: 48px 0 16px; padding-top: 28px;
+  border-top: 1px solid var(--ink);
+}
+.section-break h3 {
+  font-family: var(--f-mono); font-size: 11px; font-weight: 500;
+  color: var(--ink); margin: 0; letter-spacing: .16em; text-transform: uppercase;
+}
+.section-break .count { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .04em; }
+.section-break .rule { flex: 1; }
+
+.note-row {
+  padding: 14px 16px 14px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  display: grid; grid-template-columns: 72px 1fr auto; gap: 18px;
+  align-items: center; cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+  margin-right: -16px; padding-right: 16px;
+}
+.note-row:hover { background: var(--paper-2); padding-left: 16px; margin-left: -16px; }
+.note-row .num { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .04em; }
+.note-row h4 { font-family: var(--f-disp); font-size: 18px; font-weight: 500; margin: 0; letter-spacing: -.01em; }
+.note-row .nmeta { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .04em; }
+
+/* side */
+.side-section { margin-bottom: 48px; }
+.side-section .label {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink);
+  padding-bottom: 10px; margin-bottom: 14px;
+  border-bottom: 1px solid var(--ink);
+  display: flex; align-items: baseline; gap: 8px;
+}
+.side-section .label .num { margin-left: auto; color: var(--ink-3); font-weight: 400; }
+
+.qa-list { display: flex; flex-direction: column; }
+.qa-card {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  cursor: pointer;
+}
+.qa-card:last-child { border-bottom: 0; }
+.qa-card .q { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.qa-card .q-text { font-family: var(--f-serif); font-size: 14px; font-weight: 500; color: var(--ink); flex: 1; line-height: 1.4; }
+.qa-card .q::after {
+  content: "+"; font-family: var(--f-mono); font-size: 16px;
+  color: var(--ink-3); line-height: 1; font-weight: 300;
+}
+.qa-card.open .q::after { content: "−"; }
+.qa-card .a {
+  font-family: var(--f-serif); font-size: 13.5px; line-height: 1.6;
+  color: var(--ink-2); margin-top: 10px; display: none;
+  padding-left: 14px; border-left: 2px solid var(--ink);
+}
+.qa-card.open .a { display: block; }
+
+.mini-mesh {
+  position: relative; aspect-ratio: 1/1;
+  border: 1px solid var(--ink); background: var(--paper);
+  overflow: hidden;
+}
+.mini-mesh svg { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--ink); }
+.mini-mesh .mesh-node {
+  position: absolute; transform: translate(-50%, -50%);
+  background: var(--paper); padding: 3px 8px;
+  font-family: var(--f-sans); font-size: 11px; font-weight: 500; color: var(--ink);
+  border: 1px solid var(--ink); white-space: nowrap; cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+}
+.mini-mesh .mesh-node:hover { background: var(--ink); color: var(--paper); }
+.mini-mesh .mesh-node.hub { font-weight: 700; font-size: 12px; padding: 4px 10px; }
+.mini-mesh .mesh-node.selected { background: var(--ink); color: var(--paper); }
+
+/* ============================================================
+   POST / NOTE (reader)
+============================================================ */
+.reader-layout {
+  max-width: 1280px; margin: 0 auto;
+  padding: 0 32px 96px;
+  display: grid; grid-template-columns: 1fr 240px;
+  gap: 56px;
+}
+@media (max-width: 980px) {
+  .reader-layout { grid-template-columns: 1fr; gap: 32px; }
+  .reader-layout .aside { order: -1; }
+}
+
+.breadcrumbs {
+  font-family: var(--f-mono); font-size: 11px; color: var(--ink-3);
+  padding: 16px 0 20px; margin: 0;
+  display: flex; gap: 10px; align-items: center; letter-spacing: .04em;
+}
+.breadcrumbs .sep { color: var(--ink-5); }
+.breadcrumbs a { cursor: pointer; }
+.breadcrumbs a:hover { color: var(--ink); }
+.breadcrumbs .current { color: var(--ink); }
+
+.article-header {
+  padding: 20px 0 36px;
+  border-bottom: 1px solid var(--ink);
+  margin-bottom: 36px;
+}
+.article-header .kind-row { display: flex; gap: 14px; align-items: center; margin-bottom: 24px; flex-wrap: wrap; }
+.article-header .kind-row .meta { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .04em; }
+.article-header h1 {
+  font-family: var(--f-disp); font-weight: 500;
+  font-size: clamp(38px, 5vw, 64px);
+  line-height: 1.02; margin: 0 0 20px;
+  letter-spacing: -.02em;
+  max-width: 18ch;
+  font-variation-settings: "opsz" 144;
+}
+.article-header .lede {
+  font-family: var(--f-serif); font-size: 22px;
+  color: var(--ink-2); line-height: 1.45;
+  font-style: italic; font-weight: 400;
+  max-width: 40ch;
+  margin: 0;
+}
+.article-header .tags { margin-top: 28px; display: flex; gap: 14px; flex-wrap: wrap; }
+
+.hero-figure {
+  border: 1px solid var(--ink);
+  aspect-ratio: 16/7;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f-mono); color: var(--ink); font-size: 11px;
+  margin-bottom: 48px;
+  background:
+    linear-gradient(135deg, transparent 49.5%, var(--ink) 49.5%, var(--ink) 50.5%, transparent 50.5%),
+    linear-gradient(45deg, transparent 49.5%, var(--ink) 49.5%, var(--ink) 50.5%, transparent 50.5%),
+    var(--paper);
+  letter-spacing: .12em; text-transform: uppercase;
+}
+.hero-figure span { background: var(--paper); padding: 4px 10px; border: 1px solid var(--ink); }
+
+.prose {
+  max-width: 60ch;
+  font-family: var(--f-serif); font-size: 18px; line-height: 1.7;
+  color: var(--ink);
+}
+.prose p { margin: 0 0 1.2em; }
+.prose p.drop:first-letter {
+  font-family: var(--f-disp); font-weight: 600;
+  font-size: 5em; line-height: .85;
+  float: left; margin: 0.08em 0.08em 0 0;
+  font-variation-settings: "opsz" 144;
+}
+.prose h2 {
+  font-family: var(--f-disp); font-weight: 600; font-size: 32px;
+  line-height: 1.1; margin: 1.8em 0 .5em;
+  letter-spacing: -.015em;
+  padding-top: 0.8em;
+  border-top: 1px solid var(--rule-soft);
+}
+.prose h2::before {
+  content: "§ "; font-family: var(--f-mono); font-size: 14px;
+  color: var(--ink-3); vertical-align: 0.4em; font-weight: 400;
+}
+.prose h3 {
+  font-family: var(--f-disp); font-weight: 600; font-size: 22px;
+  margin: 1.6em 0 .4em; letter-spacing: -.01em;
+}
+.prose a {
+  color: var(--ink); border-bottom: 1px solid var(--ink);
+  padding-bottom: 1px;
+  transition: all var(--dur-fast) var(--ease);
+}
+.prose a:hover { background: var(--ink); color: var(--paper); }
+.prose code {
+  font-family: var(--f-mono); font-size: .86em;
+  padding: 1px 5px; background: var(--paper-2);
+  border: 1px solid var(--rule-soft);
+}
+.prose blockquote {
+  margin: 1.6em 0;
+  padding: 6px 0 6px 24px;
+  border-left: 3px solid var(--ink);
+  font-family: var(--f-disp);
+  font-style: italic; font-weight: 400;
+  color: var(--ink);
+  font-size: 22px; line-height: 1.4;
+}
+.prose blockquote p { margin: 0; }
+.prose blockquote cite {
+  display: block; font-family: var(--f-mono); font-size: 11px;
+  color: var(--ink-3); margin-top: 10px; font-style: normal;
+  letter-spacing: .04em;
+}
+.prose blockquote cite::before { content: "— "; }
+.prose ul { padding-left: 1.4em; list-style: none; }
+.prose li { margin: .4em 0; position: relative; }
+.prose ul > li::before {
+  content: "—"; font-family: var(--f-mono); font-weight: 500;
+  position: absolute; left: -1.4em; color: var(--ink);
+}
+
+.codeblock {
+  font-family: var(--f-mono); font-size: 13.5px; line-height: 1.65;
+  background: var(--ink); color: var(--paper);
+  padding: 20px 24px;
+  overflow-x: auto; margin: 1.6em 0;
+  border: 1px solid var(--ink);
+}
+.codeblock .c { color: var(--ink-5); font-style: italic; }
+.codeblock .k { color: var(--paper); font-weight: 600; }
+.codeblock .s { color: var(--ink-5); }
+
+/* pull-quote */
+.pull-quote {
+  font-family: var(--f-disp); font-weight: 500;
+  font-size: 28px; line-height: 1.2;
+  color: var(--ink); font-style: italic;
+  padding: 28px 0;
+  margin: 2em 0;
+  border-top: 3px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  max-width: 48ch;
+  letter-spacing: -.01em;
+}
+
+.page-qa {
+  margin-top: 56px;
+  padding: 36px 0;
+  border-top: 3px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+.page-qa .label {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px;
+}
+.page-qa h3 {
+  font-family: var(--f-disp); font-weight: 600; font-size: 28px;
+  margin: 0 0 22px; letter-spacing: -.015em;
+}
+
+.related-block { margin-top: 48px; }
+.related-block .label {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink);
+  padding-bottom: 10px; margin-bottom: 16px;
+  border-bottom: 1px solid var(--ink);
+}
+.related-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--ink); }
+@media (max-width: 640px) { .related-grid { grid-template-columns: 1fr; } }
+.related-item {
+  padding: 16px 18px;
+  border-right: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+.related-item:hover { background: var(--ink); color: var(--paper); }
+.related-item:hover .meta, .related-item:hover .kind-badge { color: var(--paper); border-color: var(--paper); }
+.related-item:hover .kind-badge.post { background: var(--paper); color: var(--ink); }
+.related-item:nth-child(2n) { border-right: 0; }
+.related-item:nth-last-child(-n+2) { border-bottom: 0; }
+.related-item .row1 { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.related-item .meta { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); margin-left: auto; letter-spacing: .04em; }
+.related-item .t { font-family: var(--f-disp); font-weight: 500; font-size: 16px; letter-spacing: -.005em; }
+
+.pager {
+  display: grid; grid-template-columns: 1fr 1fr;
+  margin-top: 64px;
+  border: 1px solid var(--ink);
+}
+.pager-link {
+  padding: 22px 24px; cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+.pager-link:hover { background: var(--ink); color: var(--paper); }
+.pager-link:hover .dir { color: var(--paper); }
+.pager-link:first-child { border-right: 1px solid var(--ink); }
+.pager-link .dir { font-family: var(--f-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 8px; }
+.pager-link .t { font-family: var(--f-disp); font-weight: 500; font-size: 18px; letter-spacing: -.01em; }
+.pager-link.next { text-align: right; }
+
+/* aside */
+.aside { align-self: start; position: sticky; top: 96px; padding-top: 20px; }
+.toc { margin-bottom: 36px; }
+.toc .label {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink);
+  padding-bottom: 8px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--ink);
+}
+.toc ul { list-style: none; padding: 0; margin: 0; }
+.toc li {
+  font-family: var(--f-serif); font-size: 14px;
+  padding: 5px 0; color: var(--ink-3); cursor: pointer;
+  position: relative; padding-left: 18px;
+  transition: color var(--dur-fast) var(--ease);
+  line-height: 1.3;
+}
+.toc li::before {
+  content: "›"; font-family: var(--f-mono);
+  position: absolute; left: 0; color: var(--ink-4);
+  font-size: 12px;
+}
+.toc li.active { color: var(--ink); font-weight: 600; }
+.toc li.active::before { color: var(--ink); }
+.toc li:hover { color: var(--ink); }
+.toc li.l2 { padding-left: 32px; font-size: 13px; }
+.toc li.l2::before { left: 18px; content: "—"; }
+
+/* ============================================================
+   GRAPH
+============================================================ */
+.graph-layout { max-width: 1400px; margin: 0 auto; padding: 0 32px 96px; }
+.graph-header {
+  padding: 28px 0 20px;
+  border-bottom: 1px solid var(--ink);
+  display: flex; align-items: baseline; gap: 24px; flex-wrap: wrap;
+  margin-bottom: 0;
+}
+.graph-header h1 {
+  font-family: var(--f-disp); font-weight: 500;
+  font-size: 48px; margin: 0;
+  letter-spacing: -.02em;
+  font-variation-settings: "opsz" 144;
+}
+.graph-header .meta { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); margin-left: auto; letter-spacing: .04em; }
+
+.graph-controls {
+  display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ink);
+  margin-bottom: 24px;
+}
+.graph-controls .group { display: flex; align-items: center; gap: 10px; }
+.graph-controls .group .lab { font-family: var(--f-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); }
+.graph-controls .btn-group { display: flex; border: 1px solid var(--ink); }
+.graph-controls .btn-group button {
+  border: 0; background: transparent;
+  font-family: var(--f-mono); font-size: 11px; font-weight: 500;
+  padding: 6px 14px; color: var(--ink-3); cursor: pointer;
+  letter-spacing: .06em; text-transform: uppercase;
+  border-right: 1px solid var(--ink);
+  transition: all var(--dur-fast) var(--ease);
+}
+.graph-controls .btn-group button:last-child { border-right: 0; }
+.graph-controls .btn-group button.active { background: var(--ink); color: var(--paper); }
+.graph-controls .btn-group button:hover:not(.active) { background: var(--paper-2); color: var(--ink); }
+
+.graph-main {
+  display: grid; grid-template-columns: 1fr 300px;
+  gap: 0; height: 640px;
+  border: 1px solid var(--ink);
+}
+@media (max-width: 980px) { .graph-main { grid-template-columns: 1fr; height: auto; } }
+
+.graph-canvas {
+  position: relative; background: var(--paper);
+  overflow: hidden;
+  background-image:
+    linear-gradient(to right, var(--rule-soft) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--rule-soft) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.graph-canvas svg { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--ink); }
+.graph-canvas .mesh-node {
+  position: absolute; transform: translate(-50%, -50%);
+  background: var(--paper); padding: 4px 10px;
+  font-family: var(--f-sans); font-size: 12px; font-weight: 500; color: var(--ink);
+  border: 1px solid var(--ink); white-space: nowrap; cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+}
+.graph-canvas .mesh-node:hover { background: var(--ink); color: var(--paper); transform: translate(-50%, -50%) scale(1.05); }
+.graph-canvas .mesh-node.hub { font-weight: 700; font-size: 13px; padding: 5px 12px; }
+.graph-canvas .mesh-node.selected { background: var(--ink); color: var(--paper); font-weight: 600; }
+.graph-canvas .mesh-node.concept {
+  font-weight: 600; font-family: var(--f-disp);
+  font-style: italic; padding: 4px 12px;
+  border-width: 2px;
+}
+
+.graph-aside {
+  border-left: 1px solid var(--ink);
+  overflow-y: auto; padding: 0;
+  background: var(--paper-2);
+}
+.graph-aside .block { padding: 20px 22px; border-bottom: 1px solid var(--ink); }
+.graph-aside .block:last-child { border-bottom: 0; }
+.graph-aside .block .label {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px;
+}
+.graph-aside h4 {
+  font-family: var(--f-disp); font-weight: 600; font-size: 19px;
+  margin: 0 0 4px; letter-spacing: -.01em;
+}
+
+.graph-neighbor {
+  display: grid; grid-template-columns: auto 1fr;
+  gap: 10px; padding: 8px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  cursor: pointer;
+  align-items: center;
+}
+.graph-neighbor:last-child { border-bottom: 0; }
+.graph-neighbor:hover h5 { text-decoration: underline; }
+.graph-neighbor h5 { font-family: var(--f-disp); font-size: 14px; font-weight: 500; margin: 0; letter-spacing: -.005em; }
+
+.legend-row {
+  display: grid; grid-template-columns: 100px 1fr;
+  gap: 12px; align-items: center; padding: 6px 0;
+  font-size: 11.5px; color: var(--ink-3); font-family: var(--f-sans);
+}
+
+/* ============================================================
+   SEARCH ⌘K
+============================================================ */
+.cmdk-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35);
+  z-index: 90; display: none; align-items: flex-start; justify-content: center;
+  padding-top: 12vh;
+}
+.cmdk-backdrop.open { display: flex; }
+.cmdk {
+  width: min(640px, calc(100vw - 32px));
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  max-height: 76vh;
+  box-shadow: 12px 12px 0 var(--ink);
+}
+.cmdk .search-box {
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--ink);
+}
+.cmdk .search-box .ico { color: var(--ink); }
+.cmdk .search-box input {
+  font-family: var(--f-disp); font-size: 20px; font-weight: 500;
+  border: 0; background: transparent; outline: none; flex: 1; color: var(--ink);
+  letter-spacing: -.01em;
+}
+.cmdk .search-box input::placeholder { color: var(--ink-4); font-weight: 400; }
+.cmdk .search-box .kbd { margin-left: auto; }
+.cmdk .results { flex: 1; overflow-y: auto; padding: 0; }
+.cmdk .group-head {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink-3);
+  padding: 14px 18px 6px;
+  background: var(--paper-2);
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  display: flex; align-items: baseline; gap: 8px;
+}
+.cmdk .group-head .c { margin-left: auto; color: var(--ink-4); }
+.cmdk .result {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 18px; cursor: pointer;
+  border-bottom: 1px solid var(--rule-soft);
+  transition: background var(--dur-fast) var(--ease);
+}
+.cmdk .result:last-child { border-bottom: 0; }
+.cmdk .result:hover, .cmdk .result.active { background: var(--ink); color: var(--paper); }
+.cmdk .result.active .m, .cmdk .result:hover .m { color: var(--ink-5); }
+.cmdk .result.active .kind-badge, .cmdk .result:hover .kind-badge { background: var(--paper); color: var(--ink); }
+.cmdk .result.active .kind-badge.post, .cmdk .result:hover .kind-badge.post { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+.cmdk .result.active .tier-badge, .cmdk .result:hover .tier-badge { border-color: var(--paper); color: var(--paper); }
+.cmdk .result .t { font-family: var(--f-disp); font-size: 16px; font-weight: 500; flex: 1; letter-spacing: -.005em; }
+.cmdk .result .m { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; }
+.cmdk .footer {
+  padding: 10px 18px; display: flex; gap: 16px;
+  font-family: var(--f-mono); font-size: 10px; color: var(--ink-3);
+  border-top: 1px solid var(--ink);
+  background: var(--paper-2);
+  letter-spacing: .04em;
+}
+.cmdk .footer span { display: inline-flex; gap: 5px; align-items: center; }
+
+/* ============================================================
+   404
+============================================================ */
+.notfound { min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 40px 32px; }
+.notfound .box {
+  text-align: left; max-width: 620px; width: 100%;
+  padding: 48px 56px;
+  border: 1px solid var(--ink);
+  position: relative;
+}
+.notfound .box::before {
+  content: ""; position: absolute;
+  inset: 8px; border: 1px solid var(--ink);
+  pointer-events: none;
+}
+.notfound .code {
+  font-family: var(--f-mono); font-size: 11px; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 24px;
+}
+.notfound .big {
+  font-family: var(--f-disp); font-weight: 600;
+  font-size: 160px; line-height: .85;
+  letter-spacing: -.04em; margin: 0 0 20px;
+  font-variation-settings: "opsz" 144;
+}
+.notfound h1 {
+  font-family: var(--f-disp); font-weight: 600;
+  font-size: 32px; margin: 0 0 14px;
+  letter-spacing: -.015em;
+}
+.notfound p { font-family: var(--f-serif); font-size: 16px; color: var(--ink-2); line-height: 1.6; margin: 0 0 28px; max-width: 48ch; }
+.notfound .suggests { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--ink); }
+.notfound .suggests .label {
+  font-family: var(--f-mono); font-size: 10px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px;
+}
+
+/* ============================================================
+   FOOTER
+============================================================ */
+.footer {
+  max-width: 1280px; margin: 0 auto;
+  padding: 0 32px 48px;
+}
+.footer-box {
+  border-top: 3px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding: 40px 0 36px;
+  display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr; gap: 36px;
+}
+@media (max-width: 780px) { .footer-box { grid-template-columns: 1fr 1fr; } }
+.footer-col .ch { font-family: var(--f-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--rule-soft); }
+.footer-col a { font-family: var(--f-serif); font-size: 15px; color: var(--ink-2); padding: 4px 0; display: block; cursor: pointer; }
+.footer-col a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.footer-col .brand { font-family: var(--f-disp); font-size: 32px; font-weight: 600; margin-bottom: 12px; letter-spacing: -.02em; line-height: 1; }
+.footer-col .tagline { font-family: var(--f-serif); font-size: 14px; color: var(--ink-3); line-height: 1.55; font-style: italic; max-width: 34ch; }
+.footer-legal {
+  font-family: var(--f-mono); font-size: 10px;
+  color: var(--ink-3); padding: 18px 0;
+  letter-spacing: .12em; display: flex; justify-content: space-between;
+}
+
+.hover-dark { transition: all var(--dur-fast) var(--ease); }
+.hover-dark:hover { background: var(--ink); color: var(--paper); }
+</style>
+</head>
+<body>
+
+<!-- ==================== ROUTE NAV ==================== -->
+<nav class="page-nav">
+  <button data-page="home" class="active">/</button>
+  <button data-page="post">/posts/[slug]</button>
+  <button data-page="note">/notes/[slug]</button>
+  <button data-page="graph">/graph</button>
+  <button data-page="search">search ⌘K</button>
+  <button data-page="notfound">404</button>
+</nav>
+
+<!-- ==================== HOME ==================== -->
+<main class="page active" data-screen-label="01 Home" id="page-home">
+
+  <header class="topbar">
+    <span class="logo">meshblog<span class="sub">est. 2026</span></span>
+    <div class="spacer"></div>
+    <nav class="nav-links">
+      <a class="nav-link active">posts</a>
+      <a class="nav-link">notes</a>
+      <a class="nav-link" onclick="goto('graph')">graph</a>
+      <a class="nav-link">about</a>
+    </nav>
+    <button class="btn btn-sm" onclick="openCmdk()">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.3 10.3L13.5 13.5"/></svg>
+      search <span class="kbd">⌘K</span>
+    </button>
+  </header>
+
+  <section class="home-layout">
+    <div class="home-main">
+      <div class="home-hero">
+        <div class="eyebrow">issue nº 012 · 2026 · q2</div>
+        <h1>두 번째 뇌를, 남들이 읽을 수 있게 <em>내보내기</em>.</h1>
+        <p class="sub">Obsidian vault에서 키우고 정적 사이트로 내보내는 개인 블로그. 글은 서로 참조하고, 개념은 그물처럼 얽힌다.</p>
+      </div>
+
+      <div class="feed">
+        <article class="post-card" onclick="goto('post')">
+          <div class="head">
+            <span class="kind-badge post">post / 01</span>
+            <span class="meta">2026 · 04 · 19  ·  7 min</span>
+          </div>
+          <h2>왜 meshblog를 만들었나</h2>
+          <p class="excerpt">지식이란 원래 그물처럼 얽혀 있는데, 대부분의 블로그는 그걸 한 줄로 세웠을 뿐이다. meshblog는 연결 자체를 1급 시민으로 대우한다.</p>
+          <div class="tags">
+            <span class="tag">#blogging</span>
+            <span class="tag">#design</span>
+            <span class="tag">#knowledge-graph</span>
+          </div>
+        </article>
+
+        <article class="post-card with-thumb">
+          <div class="thumb"><span>og · 02</span></div>
+          <div>
+            <div class="head">
+              <span class="kind-badge post">post / 02</span>
+              <span class="meta">2026 · 04 · 14  ·  6 min</span>
+            </div>
+            <h2 class="sm">SQLite is all you need</h2>
+            <p class="excerpt">빌드타임에 한번만 돌면 끝나는 쿼리는 DB가 필요 없다. 파일 하나가 블로그의 뒤통수를 책임진다.</p>
+            <div class="tags"><span class="tag">#sqlite</span><span class="tag">#ssg</span></div>
+          </div>
+        </article>
+
+        <article class="post-card with-thumb">
+          <div class="thumb"><span>og · 03</span></div>
+          <div>
+            <div class="head">
+              <span class="kind-badge post">post / 03</span>
+              <span class="meta">2026 · 04 · 10  ·  5 min</span>
+            </div>
+            <h2 class="sm">Astro islands — 언제 하이드레이트해야 하나</h2>
+            <p class="excerpt">인터랙션이 필요한 곳에만 React를 내려보낸다. 나머지는 그냥 HTML.</p>
+            <div class="tags"><span class="tag">#astro</span><span class="tag">#performance</span></div>
+          </div>
+        </article>
+
+        <article class="post-card with-thumb">
+          <div class="thumb"><span>og · 04</span></div>
+          <div>
+            <div class="head">
+              <span class="kind-badge post">post / 04</span>
+              <span class="meta">2026 · 04 · 05  ·  8 min</span>
+            </div>
+            <h2 class="sm">chunking for embeddings — 문단 단위는 왜 나쁜가</h2>
+            <p class="excerpt">의미 단위로 자를 것, 문장 경계에서 멈출 것, 그리고 조금 겹치게 둘 것.</p>
+            <div class="tags"><span class="tag">#rag</span><span class="tag">#embedding</span></div>
+          </div>
+        </article>
+
+        <div class="section-break">
+          <h3>notes · atomic</h3>
+          <span class="count">14 entries</span>
+          <div class="rule"></div>
+        </div>
+
+        <div class="note-row" onclick="goto('note')">
+          <span class="num">N / 09</span>
+          <h4>knowledge-graphs</h4>
+          <span class="nmeta">2 min</span>
+        </div>
+        <div class="note-row">
+          <span class="num">N / 10</span>
+          <h4>rag — retrieval-augmented-generation</h4>
+          <span class="nmeta">3 min</span>
+        </div>
+        <div class="note-row">
+          <span class="num">N / 11</span>
+          <h4>louvain-communities</h4>
+          <span class="nmeta">4 min</span>
+        </div>
+        <div class="note-row">
+          <span class="num">N / 12</span>
+          <h4>obsidian-workflows</h4>
+          <span class="nmeta">2 min</span>
+        </div>
+        <div class="note-row">
+          <span class="num">N / 13</span>
+          <h4>pagerank-for-notes</h4>
+          <span class="nmeta">3 min</span>
+        </div>
+
+        <button class="btn" style="align-self:flex-start; margin-top:28px">notes 전체 보기 →</button>
+      </div>
+    </div>
+
+    <aside class="home-side">
+      <div class="side-section">
+        <div class="label">ask the vault <span class="num">Q&A</span></div>
+        <div class="search" style="margin-bottom:18px">
+          <span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.3 10.3L13.5 13.5"/></svg></span>
+          <input class="input" placeholder="e.g. RAG란?" />
+        </div>
+        <div class="qa-list">
+          <div class="qa-card open">
+            <div class="q"><span class="q-text">meshblog는 뭐가 다른가?</span></div>
+            <div class="a">기존 블로그가 글 단위 "문서"의 집합이라면, meshblog는 개념 단위 "노드"의 그물이다. 독자는 목차가 아니라 의미로 항행한다.</div>
+          </div>
+          <div class="qa-card">
+            <div class="q"><span class="q-text">왜 SQLite를 썼나?</span></div>
+          </div>
+          <div class="qa-card">
+            <div class="q"><span class="q-text">Q&A는 어떻게 생성되나?</span></div>
+          </div>
+          <div class="qa-card">
+            <div class="q"><span class="q-text">Astro islands의 트레이드오프?</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <div class="label">concept mesh <span class="num">L2</span></div>
+        <div class="mini-mesh">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+            <line x1="36" y1="30" x2="70" y2="22" stroke="currentColor" stroke-width=".4"/>
+            <line x1="36" y1="30" x2="70" y2="58" stroke="currentColor" stroke-width=".4"/>
+            <line x1="70" y1="58" x2="22" y2="62" stroke="currentColor" stroke-width=".4"/>
+            <line x1="70" y1="58" x2="48" y2="82" stroke="currentColor" stroke-width=".4"/>
+            <line x1="36" y1="30" x2="14" y2="24" stroke="currentColor" stroke-width=".4"/>
+          </svg>
+          <span class="mesh-node hub" style="left:36%; top:30%">knowledge</span>
+          <span class="mesh-node hub" style="left:70%; top:58%">llm</span>
+          <span class="mesh-node" style="left:70%; top:22%">rag</span>
+          <span class="mesh-node" style="left:22%; top:62%">astro</span>
+          <span class="mesh-node" style="left:48%; top:82%">sqlite</span>
+          <span class="mesh-node" style="left:14%; top:24%; font-size:10px">faq</span>
+        </div>
+        <button class="btn" style="margin-top:16px; width:100%; justify-content:center" onclick="goto('graph')">전체 그래프 →</button>
+      </div>
+
+      <div class="side-section">
+        <div class="label">feed</div>
+        <a style="font-family:var(--f-serif); font-size:14px; color:var(--ink-2); padding:4px 0; display:block; cursor:pointer">→ atom · rss</a>
+        <a style="font-family:var(--f-serif); font-size:14px; color:var(--ink-2); padding:4px 0; display:block; cursor:pointer">→ github</a>
+        <a style="font-family:var(--f-serif); font-size:14px; color:var(--ink-2); padding:4px 0; display:block; cursor:pointer">→ email digest</a>
+      </div>
+    </aside>
+  </section>
+
+  <div class="footer">
+    <div class="footer-box">
+      <div class="footer-col">
+        <div class="brand">meshblog</div>
+        <div class="tagline">Obsidian vault로 키우고, 정적 사이트로 내보내는 2nd-brain 블로그.</div>
+      </div>
+      <div class="footer-col"><div class="ch">read</div><a>최신 posts</a><a>아카이브</a><a>태그</a><a>atom · rss</a></div>
+      <div class="footer-col"><div class="ch">explore</div><a onclick="goto('graph')">graph</a><a>notes</a><a>개념 클러스터</a><a>random</a></div>
+      <div class="footer-col"><div class="ch">about</div><a>만든 사람</a><a>콜로폰</a><a>github</a><a>mailto</a></div>
+    </div>
+    <div class="footer-legal">
+      <span>© 2026 meshblog</span>
+      <span>built with astro + sqlite</span>
+    </div>
+  </div>
+
+</main>
+
+<!-- ==================== POST ==================== -->
+<main class="page" data-screen-label="02 Post" id="page-post">
+
+  <header class="topbar">
+    <span class="logo">meshblog</span>
+    <div class="spacer"></div>
+    <nav class="nav-links">
+      <a class="nav-link active">posts</a>
+      <a class="nav-link">notes</a>
+      <a class="nav-link" onclick="goto('graph')">graph</a>
+      <a class="nav-link">about</a>
+    </nav>
+    <button class="btn btn-sm" onclick="openCmdk()">search <span class="kbd">⌘K</span></button>
+  </header>
+
+  <section class="reader-layout">
+    <article>
+      <div class="breadcrumbs">
+        <a onclick="goto('home')">home</a>
+        <span class="sep">/</span>
+        <a>posts</a>
+        <span class="sep">/</span>
+        <span class="current">why-i-built-meshblog</span>
+      </div>
+
+      <header class="article-header">
+        <div class="kind-row">
+          <span class="kind-badge post">post / 01</span>
+          <span class="meta">2026 · 04 · 19  ·  7 min read  ·  blogging / design</span>
+        </div>
+        <h1>왜 meshblog를 만들었나</h1>
+        <p class="lede">지식이란 원래 그물처럼 얽혀 있는데, 대부분의 블로그는 그걸 한 줄로 세웠을 뿐이다.</p>
+        <div class="tags">
+          <span class="tag">#blogging</span>
+          <span class="tag">#design</span>
+          <span class="tag">#knowledge-graph</span>
+        </div>
+      </header>
+
+      <figure class="hero-figure"><span>hero · figure 01</span></figure>
+
+      <div class="prose">
+        <p class="drop">지식은 목차의 모양이 아니다. 뭔가를 배운다는 건 새 단어를 외우는 게 아니라 기존 단어들 사이에 새 엣지를 긋는 일이다. 그런데 블로그는 이 엣지를 기록할 자리가 없다. 날짜 순으로 쌓이거나, 태그로 느슨히 묶이거나, 잘해야 "관련 글 5개" 정도.</p>
+
+        <h2>기존 블로그의 문제</h2>
+        <p>Medium, Tistory, Velog — 전부 훌륭하지만 한 가지 가정을 공유한다. <b>글은 단위다.</b> 제목이 있고, 시작과 끝이 있고, 독립적으로 소비된다. 하지만 내가 어떤 개념을 이해한다는 것은 그 개념이 <em>다른 개념과 어떻게 붙어 있는지</em>를 안다는 뜻이다. 이 관계를 보여주지 못하는 매체는 지식의 얕은 단면만 전할 수 있다.</p>
+
+        <blockquote>
+          <p>A tool for thought가 되려면, 매체 자체가 사고의 구조를 흉내내야 한다.</p>
+          <cite>아마도 내가 방금 지어낸 말</cite>
+        </blockquote>
+
+        <h2>연결의 가치</h2>
+        <p>Obsidian을 3년 쓰면서 가장 좋았던 건 backlinks다. 내가 쓴 다른 노트가 이 노트를 참조하고 있다는 걸 볼 때, 나는 <code>이 개념이 내 생각의 어디쯤 있는지</code>를 안다. 이건 위키피디아의 "이 문서를 참조하는 문서" 같은 기능이 아니다. 개인 지식 구조의 지도다.</p>
+
+        <p>meshblog는 이 감각을 공개 블로그로 옮기려는 시도다. 글 하나가 섬이 아니라 노드이고, 독자는 제목이 아니라 의미로 항행한다.</p>
+
+        <aside class="pull-quote">"글 하나가 섬이 아니라 노드이고, 독자는 제목이 아니라 의미로 항행한다."</aside>
+
+        <h3>어떻게 드러내나</h3>
+        <p>세 가지 레이어로.</p>
+        <ul>
+          <li><b>Wiki-link</b> — 본문 안의 <code>[[note-name]]</code>이 실제 링크가 된다.</li>
+          <li><b>Backlinks</b> — 모든 글 하단에 "이 글을 가리키는 글"이 나타난다.</li>
+          <li><b>Graph</b> — 전체 vault를 노드 그래프로 볼 수 있다. 클릭하면 해당 글로.</li>
+        </ul>
+
+        <pre class="codeblock"><span class="c">// 실제 파이프라인</span>
+<span class="k">export async function</span> buildIndex() {
+  <span class="k">const</span> notes = <span class="k">await</span> readVault()
+  <span class="k">for</span> (<span class="k">const</span> n <span class="k">of</span> notes) {
+    <span class="k">await</span> extractEntities(n)
+    <span class="k">await</span> embed(n)
+    <span class="k">await</span> upsertBacklinks(n)
+  }
+}</pre>
+
+        <h2>LLM-generated Q&A</h2>
+        <p>각 글마다 3-tier FAQ를 미리 생성한다. note-tier는 이 글 안에서만 답하는 질문, concept-tier는 관련 개념 전체, global-tier는 vault 전체에 걸친 질문. 이걸 <b>QAChips</b>라고 부르는데, 독자가 검색 대신 질문할 수 있게 해준다.</p>
+
+        <h2>왜 지금인가</h2>
+        <p>embedding이 저렴해졌다 (~$0.006/full regen). Astro가 React island를 지원한다. SQLite로 빌드타임 쿼리가 충분하다. 그리고 나는 3년치 노트가 쌓였고, 이걸 그냥 썩히기는 아까웠다.</p>
+      </div>
+
+      <!-- page-scope QA -->
+      <div class="page-qa">
+        <div class="label">ask this page</div>
+        <h3>QAChips — page scope</h3>
+        <div class="search" style="margin-bottom:18px; max-width:480px">
+          <span class="ico"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.3 10.3L13.5 13.5"/></svg></span>
+          <input class="input" placeholder="이 글에서 찾기…" />
+        </div>
+        <div class="qa-list">
+          <div class="qa-card">
+            <div class="q"><span class="q-text">왜 Medium이 아닌가?</span></div>
+          </div>
+          <div class="qa-card open">
+            <div class="q"><span class="q-text">graph 구조의 실제 가치는?</span></div>
+            <div class="a">한 노트가 다른 노트를 참조할 때 그건 개념 사이의 의존성이고, 독자는 그 의존성을 따라가며 저자의 생각 구조 자체를 배울 수 있다. 선형 글이 전달할 수 없는 정보다.</div>
+          </div>
+          <div class="qa-card">
+            <div class="q"><span class="q-text">공개 블로그로서의 제약?</span></div>
+          </div>
+          <div class="qa-card">
+            <div class="q"><span class="q-text">Obsidian 없이는 불가능한가?</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- related -->
+      <div class="related-block">
+        <div class="label">related · 4</div>
+        <div class="related-grid">
+          <div class="related-item">
+            <div class="row1">
+              <span class="kind-badge note">note</span>
+              <span class="meta">N / 09 · 2 min</span>
+            </div>
+            <div class="t">knowledge-graphs</div>
+          </div>
+          <div class="related-item">
+            <div class="row1">
+              <span class="kind-badge post">post</span>
+              <span class="meta">P / 04 · 8 min</span>
+            </div>
+            <div class="t">chunking for embeddings</div>
+          </div>
+          <div class="related-item">
+            <div class="row1">
+              <span class="kind-badge note">note</span>
+              <span class="meta">N / 12 · 2 min</span>
+            </div>
+            <div class="t">obsidian-workflows</div>
+          </div>
+          <div class="related-item">
+            <div class="row1">
+              <span class="kind-badge post">post</span>
+              <span class="meta">P / 02 · 6 min</span>
+            </div>
+            <div class="t">SQLite is all you need</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="pager">
+        <a class="pager-link">
+          <div class="dir">← previous · post / 04</div>
+          <div class="t">chunking for embeddings</div>
+        </a>
+        <a class="pager-link next">
+          <div class="dir">next · post / 05 →</div>
+          <div class="t">shipping-solo</div>
+        </a>
+      </nav>
+    </article>
+
+    <aside class="aside">
+      <div class="toc">
+        <div class="label">contents</div>
+        <ul>
+          <li>도입</li>
+          <li>기존 블로그의 문제</li>
+          <li class="active">연결의 가치</li>
+          <li class="l2">어떻게 드러내나</li>
+          <li>LLM-generated Q&A</li>
+          <li>왜 지금인가</li>
+        </ul>
+      </div>
+
+      <div class="toc">
+        <div class="label">related mesh</div>
+        <div class="mini-mesh" style="margin-top:4px">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+            <line x1="50" y1="52" x2="22" y2="28" stroke="currentColor" stroke-width=".4"/>
+            <line x1="50" y1="52" x2="80" y2="32" stroke="currentColor" stroke-width=".4"/>
+            <line x1="50" y1="52" x2="28" y2="78" stroke="currentColor" stroke-width=".4"/>
+            <line x1="50" y1="52" x2="80" y2="75" stroke="currentColor" stroke-width=".4"/>
+          </svg>
+          <span class="mesh-node selected" style="left:50%; top:52%; font-size:10px">this</span>
+          <span class="mesh-node hub" style="left:22%; top:28%; font-size:10px">llm</span>
+          <span class="mesh-node hub" style="left:80%; top:32%; font-size:10px">graph</span>
+          <span class="mesh-node" style="left:28%; top:78%; font-size:10px">obsidian</span>
+          <span class="mesh-node" style="left:80%; top:75%; font-size:10px">astro</span>
+        </div>
+      </div>
+
+      <div class="toc">
+        <div class="label">backlinks · 4</div>
+        <ul>
+          <li>shipping-solo</li>
+          <li>static-sites-2026</li>
+          <li>N / philosophy</li>
+          <li>N / obsidian-wf</li>
+        </ul>
+      </div>
+    </aside>
+  </section>
+
+</main>
+
+<!-- ==================== NOTE ==================== -->
+<main class="page" data-screen-label="03 Note" id="page-note">
+
+  <header class="topbar">
+    <span class="logo">meshblog</span>
+    <div class="spacer"></div>
+    <nav class="nav-links">
+      <a class="nav-link">posts</a>
+      <a class="nav-link active">notes</a>
+      <a class="nav-link" onclick="goto('graph')">graph</a>
+      <a class="nav-link">about</a>
+    </nav>
+    <button class="btn btn-sm" onclick="openCmdk()">search <span class="kbd">⌘K</span></button>
+  </header>
+
+  <section class="reader-layout">
+    <article>
+      <div class="breadcrumbs">
+        <a onclick="goto('home')">home</a>
+        <span class="sep">/</span>
+        <a>notes</a>
+        <span class="sep">/</span>
+        <span class="current">knowledge-graphs</span>
+      </div>
+
+      <header class="article-header">
+        <div class="kind-row">
+          <span class="kind-badge note">note / 09</span>
+          <span class="meta">2 min read  ·  atomic  ·  last edit 2026 · 04 · 18</span>
+        </div>
+        <h1 style="font-size:clamp(36px, 4vw, 52px)">knowledge-graphs</h1>
+        <p class="lede">노드는 개념이 아니라 "구체적인 메모"다. 엣지는 인용과 동시 출현으로 생긴다.</p>
+        <div class="tags">
+          <span class="tag">#graph</span>
+          <span class="tag">#knowledge</span>
+        </div>
+      </header>
+
+      <div class="prose">
+        <p>이 노트는 <code>knowledge-graph</code>를 내가 쓰는 맥락에서 무엇을 뜻하는지 고정해두려고 쓴다. 책에 나오는 formal 정의가 아니라 작업용 정의다.</p>
+
+        <h3>내가 쓰는 의미</h3>
+        <p>노드는 <b>메모</b>다. 하나의 파일, 하나의 주제. 개념이 아니다. 개념은 여러 메모에 걸쳐 나타나는 <em>패턴</em>이다 (후행적으로 클러스터링으로 찾아낸다).</p>
+        <p>엣지는 세 가지로 생긴다.</p>
+        <ul>
+          <li><b>explicit</b> — 본문 안의 <code>[[wiki-link]]</code></li>
+          <li><b>co-occurrence</b> — 같은 entity가 두 메모에서 함께 언급됨</li>
+          <li><b>embedding-proximity</b> — cosine > 0.82</li>
+        </ul>
+
+        <h3>왜 노드를 개념이 아니라 메모로 두나</h3>
+        <p>개념을 노드로 두면 "무엇이 한 개념인가"를 먼저 정해야 한다. 이건 blocking 이슈다. 메모를 먼저 쓰고 나중에 개념을 뽑으면, 내가 글을 못 쓰는 이유가 사라진다.</p>
+
+        <pre class="codeblock">graph.addEdge(noteA, noteB, {
+  kind: <span class="s">"embed"</span>,
+  weight: <span class="s">0.84</span>
+})</pre>
+
+        <p>참고: <a>pagerank-for-notes</a>, <a>louvain-communities</a>.</p>
+      </div>
+
+      <div class="page-qa">
+        <div class="label">ask this note</div>
+        <h3>QAChips — note scope</h3>
+        <div class="qa-list">
+          <div class="qa-card open">
+            <div class="q"><span class="q-text">왜 노드를 개념이 아니라 메모로?</span></div>
+            <div class="a">개념을 먼저 정의하려면 분류 체계가 선행돼야 하는데, 이건 글 쓰기를 막는 blocking 문제가 된다. 메모 우선 접근은 쓰기 저항을 0으로 만든다.</div>
+          </div>
+          <div class="qa-card">
+            <div class="q"><span class="q-text">PageRank는 어떻게 쓰는가?</span></div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <aside class="aside">
+      <div class="toc">
+        <div class="label">appears in · 3</div>
+        <ul>
+          <li>why-i-built-meshblog</li>
+          <li>pagerank-for-notes</li>
+          <li>louvain-communities</li>
+        </ul>
+      </div>
+      <div class="toc">
+        <div class="label">concepts</div>
+        <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:8px">
+          <span class="tag selected">graph</span>
+          <span class="tag selected">knowledge</span>
+          <span class="tag">obsidian</span>
+        </div>
+      </div>
+      <div class="toc">
+        <div class="label">position in mesh</div>
+        <div class="mini-mesh" style="margin-top:4px">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+            <line x1="50" y1="50" x2="28" y2="28" stroke="currentColor" stroke-width=".4"/>
+            <line x1="50" y1="50" x2="78" y2="35" stroke="currentColor" stroke-width=".4"/>
+            <line x1="50" y1="50" x2="74" y2="72" stroke="currentColor" stroke-width=".4"/>
+          </svg>
+          <span class="mesh-node selected" style="left:50%; top:50%; font-size:10px">this note</span>
+          <span class="mesh-node" style="left:28%; top:28%; font-size:10px">wiki-links</span>
+          <span class="mesh-node hub" style="left:78%; top:35%; font-size:11px">graph</span>
+          <span class="mesh-node" style="left:74%; top:72%; font-size:10px">pagerank</span>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+</main>
+
+<!-- ==================== GRAPH ==================== -->
+<main class="page" data-screen-label="04 Graph" id="page-graph">
+
+  <header class="topbar">
+    <span class="logo">meshblog</span>
+    <div class="spacer"></div>
+    <nav class="nav-links">
+      <a class="nav-link" onclick="goto('home')">posts</a>
+      <a class="nav-link">notes</a>
+      <a class="nav-link active">graph</a>
+      <a class="nav-link">about</a>
+    </nav>
+    <button class="btn btn-sm" onclick="openCmdk()">search <span class="kbd">⌘K</span></button>
+  </header>
+
+  <section class="graph-layout">
+    <div class="graph-header">
+      <h1>Knowledge mesh</h1>
+      <span class="meta" id="graphMeta">21 nodes · 38 links · mode: notes · L2</span>
+    </div>
+
+    <div class="graph-controls">
+      <div class="group">
+        <span class="lab">mode</span>
+        <div class="btn-group" id="modeGroup">
+          <button class="active" data-mode="notes">notes</button>
+          <button data-mode="concepts">concepts</button>
+        </div>
+      </div>
+      <div class="group">
+        <span class="lab">level</span>
+        <div class="btn-group" id="levelGroup">
+          <button data-level="1">L1</button>
+          <button class="active" data-level="2">L2</button>
+          <button data-level="3">L3</button>
+        </div>
+      </div>
+      <div style="flex:1"></div>
+      <button class="btn btn-sm">share link</button>
+      <button class="btn btn-sm">list view</button>
+    </div>
+
+    <div class="graph-main">
+      <div class="graph-canvas">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+          <line x1="50" y1="50" x2="30" y2="25" stroke="currentColor" stroke-width=".25"/>
+          <line x1="50" y1="50" x2="72" y2="22" stroke="currentColor" stroke-width=".25"/>
+          <line x1="50" y1="50" x2="25" y2="60" stroke="currentColor" stroke-width=".25"/>
+          <line x1="50" y1="50" x2="75" y2="62" stroke="currentColor" stroke-width=".25"/>
+          <line x1="50" y1="50" x2="42" y2="82" stroke="currentColor" stroke-width=".25"/>
+          <line x1="30" y1="25" x2="15" y2="38" stroke="currentColor" stroke-width=".25"/>
+          <line x1="30" y1="25" x2="12" y2="18" stroke="currentColor" stroke-width=".25"/>
+          <line x1="72" y1="22" x2="88" y2="15" stroke="currentColor" stroke-width=".25"/>
+          <line x1="72" y1="22" x2="86" y2="38" stroke="currentColor" stroke-width=".25"/>
+          <line x1="75" y1="62" x2="88" y2="75" stroke="currentColor" stroke-width=".25"/>
+          <line x1="25" y1="60" x2="12" y2="70" stroke="currentColor" stroke-width=".25"/>
+          <line x1="42" y1="82" x2="58" y2="88" stroke="currentColor" stroke-width=".25"/>
+          <line x1="42" y1="82" x2="25" y2="90" stroke="currentColor" stroke-width=".25"/>
+          <line x1="15" y1="38" x2="8" y2="52" stroke="currentColor" stroke-width=".25"/>
+        </svg>
+        <span class="mesh-node selected" style="left:50%; top:50%">why-i-built-meshblog</span>
+        <span class="mesh-node concept" style="left:30%; top:25%">knowledge-graph</span>
+        <span class="mesh-node concept" style="left:72%; top:22%">llm</span>
+        <span class="mesh-node hub" style="left:25%; top:60%">astro-islands</span>
+        <span class="mesh-node hub" style="left:75%; top:62%">chunking-for-embeddings</span>
+        <span class="mesh-node" style="left:42%; top:82%">sqlite-is-all-you-need</span>
+        <span class="mesh-node" style="left:15%; top:38%">obsidian-workflows</span>
+        <span class="mesh-node" style="left:12%; top:18%">wiki-links</span>
+        <span class="mesh-node" style="left:88%; top:15%">rag</span>
+        <span class="mesh-node" style="left:86%; top:38%">embeddings</span>
+        <span class="mesh-node" style="left:88%; top:75%">generate-qa</span>
+        <span class="mesh-node" style="left:12%; top:70%">ssg</span>
+        <span class="mesh-node" style="left:58%; top:88%">build-pipeline</span>
+        <span class="mesh-node" style="left:25%; top:90%">notes-manifest</span>
+        <span class="mesh-node" style="left:8%; top:52%">pagerank-for-notes</span>
+      </div>
+
+      <aside class="graph-aside">
+        <div class="block">
+          <div class="label">selected · post</div>
+          <h4>왜 meshblog를 만들었나</h4>
+          <p style="font-family:var(--f-mono); font-size:11px; color:var(--ink-3); margin:2px 0 14px; letter-spacing:.04em">/posts/why-i-built-meshblog · 7 min</p>
+          <p style="font-family:var(--f-serif); font-size:14px; color:var(--ink-2); line-height:1.55; margin:0 0 16px">연결 자체를 1급 시민으로 대우하는 블로그를 만든 이유.</p>
+          <button class="btn primary btn-sm" style="width:100%; justify-content:center" onclick="goto('post')">글 열기 →</button>
+        </div>
+
+        <div class="block">
+          <div class="label">neighbors · 5</div>
+          <div class="graph-neighbor"><span class="kind-badge note" style="font-size:9px">N</span><h5>knowledge-graphs</h5></div>
+          <div class="graph-neighbor"><span class="kind-badge note" style="font-size:9px">N</span><h5>obsidian-workflows</h5></div>
+          <div class="graph-neighbor"><span class="kind-badge post" style="font-size:9px">P</span><h5>chunking-for-embeddings</h5></div>
+          <div class="graph-neighbor"><span class="kind-badge post" style="font-size:9px">P</span><h5>sqlite-is-all-you-need</h5></div>
+          <div class="graph-neighbor"><span class="kind-badge note" style="font-size:9px">N</span><h5>wiki-links</h5></div>
+        </div>
+
+        <div class="block">
+          <div class="label">legend</div>
+          <div class="legend-row">
+            <span class="mesh-node" style="position:static; transform:none; font-size:10px; text-align:center; padding:3px 8px">note</span>
+            <span>일반 메모</span>
+          </div>
+          <div class="legend-row">
+            <span class="mesh-node hub" style="position:static; transform:none; font-size:10px; text-align:center; padding:3px 8px">hub</span>
+            <span>high PageRank</span>
+          </div>
+          <div class="legend-row">
+            <span class="mesh-node concept" style="position:static; transform:none; font-size:10px; text-align:center; padding:3px 8px">concept</span>
+            <span>개념 (L2+)</span>
+          </div>
+          <div class="legend-row">
+            <span class="mesh-node selected" style="position:static; transform:none; font-size:10px; text-align:center; padding:3px 8px">selected</span>
+            <span>현재 선택</span>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+</main>
+
+<!-- ==================== SEARCH ⌘K ==================== -->
+<main class="page" data-screen-label="05 Search" id="page-search">
+
+  <header class="topbar">
+    <span class="logo">meshblog</span>
+    <div class="spacer"></div>
+    <nav class="nav-links">
+      <a class="nav-link" onclick="goto('home')">posts</a>
+      <a class="nav-link">notes</a>
+      <a class="nav-link" onclick="goto('graph')">graph</a>
+      <a class="nav-link">about</a>
+    </nav>
+    <button class="btn primary btn-sm" onclick="openCmdk()">⌘K 열기</button>
+  </header>
+
+  <section style="max-width:760px; margin: 80px auto; padding: 0 32px; text-align:left">
+    <div style="font-family:var(--f-mono); font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-3); margin-bottom:20px; display:flex; align-items:center; gap:12px">
+      <span style="width:24px; height:1px; background:var(--ink); display:inline-block"></span>
+      command palette
+    </div>
+    <h1 style="font-family:var(--f-disp); font-weight:500; font-size:clamp(44px, 6vw, 76px); margin:0 0 20px; letter-spacing:-.025em; line-height:.96; font-variation-settings:'opsz' 144">
+      어디서든 <em style="font-weight:400">⌘K</em>.
+    </h1>
+    <p style="font-family:var(--f-serif); font-size:19px; color:var(--ink-2); line-height:1.55; max-width:48ch; margin:0 0 36px">posts, notes, concepts, Q&A를 한 입력으로 검색합니다. 우측 하단 버튼이나 <span class="kbd">⌘K</span>로 언제든 열림.</p>
+    <button class="btn primary" onclick="openCmdk()" style="font-size:14px; padding:14px 22px">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.3 10.3L13.5 13.5"/></svg>
+      검색 열기
+    </button>
+
+    <div style="margin-top:80px; padding-top:28px; border-top:1px solid var(--ink)">
+      <div style="font-family:var(--f-mono); font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-3); margin-bottom:14px">shortcuts</div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px 40px; font-family:var(--f-serif); font-size:14px; color:var(--ink-2)">
+        <div style="display:flex; gap:12px"><span class="kbd">⌘K</span><span>검색 열기</span></div>
+        <div style="display:flex; gap:12px"><span class="kbd">↑</span><span class="kbd">↓</span><span>결과 이동</span></div>
+        <div style="display:flex; gap:12px"><span class="kbd">↵</span><span>선택한 결과 열기</span></div>
+        <div style="display:flex; gap:12px"><span class="kbd">esc</span><span>닫기</span></div>
+        <div style="display:flex; gap:12px"><span class="kbd">g</span><span class="kbd">g</span><span>graph 페이지로</span></div>
+        <div style="display:flex; gap:12px"><span class="kbd">/</span><span>검색 포커스</span></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ==================== 404 ==================== -->
+<main class="page" data-screen-label="06 404" id="page-notfound">
+
+  <header class="topbar">
+    <span class="logo">meshblog</span>
+    <div class="spacer"></div>
+    <nav class="nav-links">
+      <a class="nav-link" onclick="goto('home')">posts</a>
+      <a class="nav-link">notes</a>
+      <a class="nav-link" onclick="goto('graph')">graph</a>
+      <a class="nav-link">about</a>
+    </nav>
+    <button class="btn btn-sm" onclick="openCmdk()">search <span class="kbd">⌘K</span></button>
+  </header>
+
+  <section class="notfound">
+    <div class="box">
+      <div class="code">http · error · 404</div>
+      <div class="big">404</div>
+      <h1>여기엔 아무 노트도 없어요.</h1>
+      <p>이 URL에 해당하는 글 또는 노트를 vault에서 찾을 수 없습니다. 글이 옮겨졌거나, 슬러그가 바뀌었을 수 있어요.</p>
+
+      <button class="btn primary" onclick="goto('home')" style="justify-content:center; padding:14px 22px">
+        ← 홈으로
+      </button>
+
+      <div class="suggests">
+        <div class="label">혹시 이걸 찾으셨나요?</div>
+        <div class="note-row" onclick="goto('post')" style="margin:0">
+          <span class="num">P / 01</span>
+          <h4>왜 meshblog를 만들었나</h4>
+          <span class="nmeta">7 min</span>
+        </div>
+        <div class="note-row" onclick="goto('note')" style="margin:0">
+          <span class="num">N / 09</span>
+          <h4>knowledge-graphs</h4>
+          <span class="nmeta">2 min</span>
+        </div>
+        <div class="note-row" onclick="goto('graph')" style="margin:0; border-bottom:0">
+          <span class="num">→</span>
+          <h4>전체 그래프 보기</h4>
+          <span class="nmeta">graph</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ==================== ⌘K OVERLAY ==================== -->
+<div class="cmdk-backdrop" id="cmdkBackdrop">
+  <div class="cmdk" onclick="event.stopPropagation()">
+    <div class="search-box">
+      <span class="ico"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="4.5"/><path d="M10.3 10.3L13.5 13.5"/></svg></span>
+      <input id="cmdkInput" placeholder="글, 노트, 개념, 질문…" />
+      <span class="kbd">esc</span>
+    </div>
+    <div class="results">
+      <div class="group-head">posts <span class="c">2</span></div>
+      <div class="result active">
+        <span class="kind-badge post">post</span>
+        <span class="t">왜 meshblog를 만들었나</span>
+        <span class="m">2026 · 04 · 19</span>
+      </div>
+      <div class="result">
+        <span class="kind-badge post">post</span>
+        <span class="t">SQLite is all you need</span>
+        <span class="m">2026 · 04 · 14</span>
+      </div>
+      <div class="group-head">notes <span class="c">3</span></div>
+      <div class="result">
+        <span class="kind-badge note">note</span>
+        <span class="t">knowledge-graphs</span>
+        <span class="m">2 min</span>
+      </div>
+      <div class="result">
+        <span class="kind-badge note">note</span>
+        <span class="t">pagerank-for-notes</span>
+        <span class="m">3 min</span>
+      </div>
+      <div class="result">
+        <span class="kind-badge note">note</span>
+        <span class="t">obsidian-workflows</span>
+        <span class="m">2 min</span>
+      </div>
+      <div class="group-head">concepts <span class="c">2</span></div>
+      <div class="result">
+        <span class="tier-badge concept">concept</span>
+        <span class="t">knowledge-graph</span>
+        <span class="m">7 notes</span>
+      </div>
+      <div class="result">
+        <span class="tier-badge concept">concept</span>
+        <span class="t">retrieval-augmented-generation</span>
+        <span class="m">8 notes</span>
+      </div>
+      <div class="group-head">ask · Q&A</div>
+      <div class="result">
+        <span class="tier-badge global">global</span>
+        <span class="t">meshblog는 뭐가 다른가?</span>
+        <span class="m">global</span>
+      </div>
+    </div>
+    <div class="footer">
+      <span><span class="kbd">↑</span><span class="kbd">↓</span> navigate</span>
+      <span><span class="kbd">↵</span> open</span>
+      <span><span class="kbd">esc</span> close</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   page switcher + persistence
+============================================================ */
+function goto(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.page-nav button').forEach(b => b.classList.toggle('active', b.dataset.page === name));
+  try { localStorage.setItem('meshblog_bw_page', name); } catch(e) {}
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.page-nav button').forEach(b => {
+  b.addEventListener('click', () => goto(b.dataset.page));
+});
+try {
+  const saved = localStorage.getItem('meshblog_bw_page');
+  if (saved && document.getElementById('page-' + saved)) goto(saved);
+} catch(e) {}
+
+/* ============================================================
+   qa-card, cmdk, graph controls
+============================================================ */
+document.querySelectorAll('.qa-card .q').forEach(q => {
+  q.addEventListener('click', () => q.parentElement.classList.toggle('open'));
+});
+
+const cmdk = document.getElementById('cmdkBackdrop');
+function openCmdk() {
+  cmdk.classList.add('open');
+  setTimeout(() => document.getElementById('cmdkInput').focus(), 30);
+}
+function closeCmdk() { cmdk.classList.remove('open'); }
+cmdk.addEventListener('click', closeCmdk);
+window.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openCmdk(); }
+  if (e.key === 'Escape') closeCmdk();
+});
+
+document.querySelectorAll('#modeGroup button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#modeGroup button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    updateGraphMeta();
+  });
+});
+document.querySelectorAll('#levelGroup button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#levelGroup button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    updateGraphMeta();
+  });
+});
+function updateGraphMeta() {
+  const mode = document.querySelector('#modeGroup .active').dataset.mode;
+  const level = document.querySelector('#levelGroup .active').dataset.level;
+  const counts = { 1: '12 nodes · 20 links', 2: '21 nodes · 38 links', 3: '47 nodes · 96 links' };
+  document.getElementById('graphMeta').textContent = counts[level] + ' · mode: ' + mode + ' · L' + level;
+}
+
+window.goto = goto;
+window.openCmdk = openCmdk;
+</script>
+
+</body>
+</html>

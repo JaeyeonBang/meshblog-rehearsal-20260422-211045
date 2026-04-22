@@ -1,0 +1,39 @@
+---
+interface Props {
+  selected?: boolean;
+  href?: string;
+  class?: string;
+}
+const { selected = false, href, class: className } = Astro.props;
+const Element = href ? 'a' : 'span';
+---
+<Element class:list={['tag', selected && 'selected', className]} href={href}>
+  <slot />
+</Element>
+
+<style>
+  .tag {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    padding: 2px 8px 3px;
+    color: var(--ink-2);
+    border-bottom: 1px solid var(--ink-5);
+    display: inline-block;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease);
+    text-decoration: none;
+  }
+  .tag:hover {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+  .tag.selected {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+    font-weight: 500;
+  }
+  .tag:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+</style>

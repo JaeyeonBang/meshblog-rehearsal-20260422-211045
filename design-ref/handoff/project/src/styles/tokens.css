@@ -1,0 +1,127 @@
+/* meshblog design tokens — single source of truth
+ *
+ * Direction: editorial · paper · ink (see .impeccable.md for full context).
+ * Palette:   OKLCH only, warm-tinted neutrals (hue ~85° — paper/buff),
+ *            single ink accent (deep indigo, reserved for links + focus).
+ * Type:      Literata (serif, prose) + Pretendard (sans, UI + Korean).
+ *
+ * Rules:
+ *   - No hex literals outside this file.
+ *   - No pure white / pure black. Every neutral carries a trace of warm hue.
+ *   - Dark mode is a warm off-black — never a trading-desk dashboard.
+ */
+
+:root {
+  /* ─── Brand hue (used to tint all neutrals) ──────────────────── */
+  --meshblog-hue-paper:  85;   /* warm buff — used by surfaces */
+  --meshblog-hue-ink:    265;  /* deep indigo — used by accent */
+
+  /* ─── Colors (light) ─────────────────────────────────────────── */
+  /* Surfaces — tinted toward paper hue (chroma 0.008-0.012). */
+  --meshblog-color-bg:            oklch(0.982 0.008 var(--meshblog-hue-paper)); /* page */
+  --meshblog-color-surface:       oklch(0.970 0.010 var(--meshblog-hue-paper)); /* card / aside */
+  --meshblog-color-surface-sunk:  oklch(0.955 0.012 var(--meshblog-hue-paper)); /* code / pre */
+  --meshblog-color-border:        oklch(0.880 0.010 var(--meshblog-hue-paper));
+  --meshblog-color-rule:          oklch(0.820 0.010 var(--meshblog-hue-paper)); /* hair rules */
+
+  /* Text — near-black with warm trace; never #000. */
+  --meshblog-color-text-primary:   oklch(0.220 0.015 var(--meshblog-hue-paper));
+  --meshblog-color-text-secondary: oklch(0.420 0.015 var(--meshblog-hue-paper));
+  --meshblog-color-muted:          oklch(0.540 0.012 var(--meshblog-hue-paper));
+
+  /* Ink accent — a single restrained indigo for links + focus. */
+  --meshblog-color-accent:         oklch(0.400 0.090 var(--meshblog-hue-ink));
+  --meshblog-color-accent-hover:   oklch(0.320 0.110 var(--meshblog-hue-ink));
+  --meshblog-color-focus-ring:     oklch(0.520 0.140 var(--meshblog-hue-ink));
+  --meshblog-color-on-accent:      oklch(0.982 0.008 var(--meshblog-hue-paper));
+
+  /* Status colors — desaturated so they read as editorial marks, not alerts. */
+  --meshblog-color-success: oklch(0.520 0.090 155);
+  --meshblog-color-warn:    oklch(0.680 0.110 75);
+  --meshblog-color-error:   oklch(0.540 0.140 25);
+
+  /* Graph — monochrome ink-on-paper. */
+  --meshblog-graph-node:       oklch(0.300 0.015 var(--meshblog-hue-paper));
+  --meshblog-graph-node-hover: var(--meshblog-color-accent);
+  --meshblog-graph-link:       oklch(0.700 0.010 var(--meshblog-hue-paper));
+  --meshblog-graph-label:      var(--meshblog-color-text-secondary);
+
+  /* ─── Typography ─────────────────────────────────────────────── */
+  /* Two families. Serif holds prose; sans handles UI + Korean.      */
+  --meshblog-font-serif:
+    'Literata', 'Pretendard', 'Apple SD Gothic Neo', 'Noto Serif KR',
+    Georgia, 'Times New Roman', serif;
+  --meshblog-font-sans:
+    'Pretendard', -apple-system, system-ui, 'Apple SD Gothic Neo',
+    'Noto Sans KR', 'Segoe UI', sans-serif;
+  --meshblog-font-mono:
+    ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace;
+
+  /* Editorial scale (fluid for reading surfaces; >1.3 ratio between steps). */
+  --meshblog-font-size-xs:   0.75rem;    /*  12px */
+  --meshblog-font-size-sm:   0.8125rem;  /*  13px */
+  --meshblog-font-size-base: 1rem;       /*  16px */
+  --meshblog-font-size-md:   1.0625rem;  /*  17px — body prose */
+  --meshblog-font-size-lg:   1.25rem;    /*  20px */
+  --meshblog-font-size-xl:   1.625rem;   /*  26px */
+  --meshblog-font-size-2xl:  clamp(1.75rem, 1.3rem + 1.8vw, 2.25rem);
+  --meshblog-font-size-3xl:  clamp(2.25rem, 1.5rem + 3vw, 3rem);
+  --meshblog-font-size-4xl:  clamp(2.75rem, 1.6rem + 4.5vw, 4rem);
+  --meshblog-font-size-5xl:  clamp(3.25rem, 1.8rem + 6vw, 5rem);
+
+  /* ─── Spacing (4-based) ──────────────────────────────────────── */
+  --meshblog-space-1:  0.25rem;
+  --meshblog-space-2:  0.5rem;
+  --meshblog-space-3:  0.75rem;
+  --meshblog-space-4:  1rem;
+  --meshblog-space-5:  1.25rem;
+  --meshblog-space-6:  1.5rem;
+  --meshblog-space-8:  2rem;
+  --meshblog-space-10: 2.5rem;
+  --meshblog-space-12: 3rem;
+  --meshblog-space-16: 4rem;
+  --meshblog-space-24: 6rem;
+  --meshblog-space-32: 8rem;
+
+  /* ─── Border radii ───────────────────────────────────────────── */
+  /* Editorial surfaces keep corners honest — no pill-cards. */
+  --meshblog-radius-sm:   2px;
+  --meshblog-radius-md:   4px;
+  --meshblog-radius-lg:   6px;
+  --meshblog-radius-full: 9999px;
+
+  /* ─── Shadows ────────────────────────────────────────────────── */
+  /* Reserved for focus-lift only. Editorial prefers rules + whitespace. */
+  --meshblog-shadow-sm:    0 1px 0 0 oklch(0.220 0.015 var(--meshblog-hue-paper) / 0.06);
+  --meshblog-shadow-focus: 0 0 0 3px oklch(0.520 0.140 var(--meshblog-hue-ink) / 0.22);
+
+  /* ─── Motion ─────────────────────────────────────────────────── */
+  --meshblog-ease:      cubic-bezier(0.22, 1, 0.36, 1); /* ease-out-quint */
+  --meshblog-dur-fast:  120ms;
+  --meshblog-dur-base:  240ms;
+  --meshblog-dur-slow:  480ms;
+}
+
+/* ─── Dark mode — warm off-black reading lamp ────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --meshblog-color-bg:             oklch(0.160 0.010 var(--meshblog-hue-paper));
+    --meshblog-color-surface:        oklch(0.200 0.012 var(--meshblog-hue-paper));
+    --meshblog-color-surface-sunk:   oklch(0.140 0.010 var(--meshblog-hue-paper));
+    --meshblog-color-border:         oklch(0.320 0.012 var(--meshblog-hue-paper));
+    --meshblog-color-rule:           oklch(0.380 0.012 var(--meshblog-hue-paper));
+
+    --meshblog-color-text-primary:   oklch(0.940 0.008 var(--meshblog-hue-paper));
+    --meshblog-color-text-secondary: oklch(0.780 0.010 var(--meshblog-hue-paper));
+    --meshblog-color-muted:          oklch(0.620 0.010 var(--meshblog-hue-paper));
+
+    /* Accent lifts + de-saturates slightly so it doesn't glow. */
+    --meshblog-color-accent:         oklch(0.780 0.080 var(--meshblog-hue-ink));
+    --meshblog-color-accent-hover:   oklch(0.860 0.070 var(--meshblog-hue-ink));
+    --meshblog-color-focus-ring:     oklch(0.780 0.100 var(--meshblog-hue-ink));
+    --meshblog-color-on-accent:      oklch(0.160 0.010 var(--meshblog-hue-paper));
+
+    --meshblog-graph-node:           oklch(0.820 0.010 var(--meshblog-hue-paper));
+    --meshblog-graph-link:           oklch(0.420 0.010 var(--meshblog-hue-paper));
+  }
+}

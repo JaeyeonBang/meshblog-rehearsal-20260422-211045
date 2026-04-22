@@ -1,0 +1,33 @@
+---
+interface Props {
+  kind: 'post' | 'note';
+  number?: string | number;
+}
+const { kind, number } = Astro.props;
+const label = number !== undefined ? `${kind} / ${String(number).padStart(2, '0')}` : kind;
+---
+<span class:list={['kind-badge', kind]}>
+  {label}
+</span>
+
+<style>
+  .kind-badge {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1px solid var(--ink);
+    display: inline-block;
+    line-height: 1.6;
+  }
+  .kind-badge.post {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .kind-badge.note {
+    background: var(--paper);
+    color: var(--ink);
+  }
+</style>

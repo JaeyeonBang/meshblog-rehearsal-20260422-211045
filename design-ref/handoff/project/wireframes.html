@@ -1,0 +1,1498 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>meshblog — redesign wireframes v2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Kalam:wght@400;700&family=JetBrains+Mono:wght@400;500&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1b1b1b;
+    --ink-2:#3a3a3a;
+    --ink-3:#6b6b6b;
+    --paper:#f5f2ea;
+    --paper-2:#ece7d9;
+    --accent:#1d4ed8;   /* real meshblog blue */
+    --accent-2:#e55a3c; /* pencil red for annotations */
+    --accent-3:#f5c24a; /* highlighter */
+    --post:#1d4ed8;     /* post badge (accent pill) */
+    --note:#6b6b6b;     /* note badge (muted border) */
+    --radius: 6px;
+    --hand: 'Kalam', 'Gaegu', cursive;
+    --hand-title: 'Caveat', cursive;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--hand)}
+  body{
+    background-image:
+      radial-gradient(rgba(0,0,0,.04) 1px, transparent 1px),
+      radial-gradient(rgba(0,0,0,.03) 1px, transparent 1px);
+    background-size: 18px 18px, 36px 36px;
+    background-position: 0 0, 9px 9px;
+  }
+
+  /* top bar */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;gap:14px;
+    padding:14px 22px;background:var(--paper);
+    border-bottom:2px solid var(--ink);
+    box-shadow:0 2px 0 rgba(0,0,0,.06);
+  }
+  .brand{font-family:var(--hand-title);font-size:32px;font-weight:700;letter-spacing:.5px}
+  .brand .dot{display:inline-block;width:10px;height:10px;background:var(--accent);border-radius:999px;margin:0 4px 2px 0;transform:translateY(-4px)}
+  .topbar .meta{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+  .tabs{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+  .tab{
+    font-family:var(--hand);font-size:18px;
+    padding:6px 14px;border:2px solid var(--ink);background:var(--paper);
+    border-radius:999px;cursor:pointer;
+    box-shadow:2px 2px 0 var(--ink);
+    transition:transform .08s ease;
+  }
+  .tab:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
+  .tab:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
+  .tab.active{background:var(--ink);color:var(--paper)}
+
+  .page{display:none;padding:24px 22px 80px}
+  .page.active{display:block}
+
+  .intro{
+    max-width:960px;margin:0 auto 28px;
+    background:#fffef7;border:2px solid var(--ink);
+    border-radius:var(--radius);padding:22px 26px;
+    box-shadow:6px 6px 0 rgba(0,0,0,.08);position:relative;
+  }
+  .intro::before{
+    content:"";position:absolute;top:-10px;left:22px;right:22px;height:18px;
+    background:repeating-linear-gradient(90deg,#f5c24a 0 12px,transparent 12px 20px);
+    opacity:.55;border-radius:3px;
+  }
+  .intro h1{font-family:var(--hand-title);font-size:44px;margin:0 0 6px;line-height:1}
+  .intro .sub{font-family:var(--mono);font-size:13px;color:var(--ink-3);margin-bottom:14px}
+  .intro p{margin:6px 0;font-size:18px;line-height:1.55}
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .chip{
+    font-family:var(--mono);font-size:12px;
+    padding:4px 10px;border:1.5px dashed var(--ink);border-radius:999px;background:var(--paper-2);
+  }
+
+  .directions{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:1400px;margin:0 auto 40px}
+  @media (max-width:1000px){.directions{grid-template-columns:1fr}}
+  .dcard{
+    border:2px solid var(--ink);border-radius:var(--radius);
+    background:#fffef7;padding:16px 18px;
+    box-shadow:5px 5px 0 rgba(0,0,0,.08);
+  }
+  .dcard h3{font-family:var(--hand-title);font-size:28px;margin:0 0 4px}
+  .dcard .tag{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase}
+  .dcard p{margin:8px 0 0;font-size:16px;line-height:1.5}
+  .dcard ul{margin:8px 0 0 18px;padding:0;font-size:15px;line-height:1.55}
+  .dcard .row{display:flex;align-items:center;gap:8px;margin-top:10px;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+  .swatch{width:14px;height:14px;border:1.5px solid var(--ink);border-radius:3px;display:inline-block}
+
+  .frames{max-width:1400px;margin:0 auto;display:grid;gap:28px}
+  .frame{
+    border:2px solid var(--ink);border-radius:var(--radius);
+    background:#fffef7;padding:22px;
+    box-shadow:6px 6px 0 rgba(0,0,0,.08);
+  }
+  .frame header{display:flex;align-items:baseline;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+  .frame header h2{font-family:var(--hand-title);font-size:34px;margin:0}
+  .frame header .id{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+  .frame header .desc{font-size:16px;color:var(--ink-2);margin-left:auto;max-width:620px;text-align:right}
+  .frame .screens{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
+
+  .screen{
+    background:var(--paper);border:2px solid var(--ink);
+    border-radius:var(--radius);padding:10px;position:relative;
+    box-shadow:3px 3px 0 rgba(0,0,0,.08);
+  }
+  .screen .stamp{
+    position:absolute;top:-14px;left:14px;
+    background:var(--paper);border:1.5px solid var(--ink);
+    padding:2px 10px;font-family:var(--mono);font-size:11px;border-radius:999px;
+  }
+  .screen .body{min-height:320px;position:relative;padding:6px}
+  .screen.full{grid-column:span 12}
+  .screen.half{grid-column:span 6}
+  @media (max-width:1100px){.screen.half{grid-column:span 12}}
+
+  .chrome{
+    display:flex;align-items:center;gap:6px;margin-bottom:8px;
+    padding-bottom:8px;border-bottom:1.5px dashed var(--ink);
+  }
+  .chrome .dots{display:flex;gap:5px}
+  .chrome .dots i{width:10px;height:10px;border-radius:999px;border:1.5px solid var(--ink);display:inline-block;background:#fffef7}
+  .chrome .url{
+    flex:1;font-family:var(--mono);font-size:11px;color:var(--ink-3);
+    border:1.5px solid var(--ink);background:#fffef7;padding:3px 10px;border-radius:999px;
+  }
+
+  .phone{
+    border:2.5px solid var(--ink);border-radius:28px;padding:10px 8px 14px;
+    background:var(--paper);position:relative;
+  }
+  .phone::before{
+    content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    width:60px;height:6px;background:var(--ink);border-radius:999px;
+  }
+  .phone .notch{height:16px}
+
+  .box{
+    border:2px solid var(--ink);background:#fffef7;
+    padding:8px;border-radius:4px;position:relative;
+  }
+  .box.dash{border-style:dashed}
+  .box.ghost{background:repeating-linear-gradient(-45deg,transparent 0 6px,rgba(0,0,0,.06) 6px 7px);}
+  .box.filled{background:var(--paper-2)}
+  .box.ink{background:var(--ink);color:var(--paper)}
+  .box.hi{background:var(--accent-3)}
+
+  .label{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.05em;text-transform:uppercase}
+  .txt{font-family:var(--hand);font-size:15px;line-height:1.4}
+  .h{font-family:var(--hand-title);font-weight:700;font-size:22px;line-height:1.1}
+  .hh{font-family:var(--hand-title);font-weight:700;font-size:28px;line-height:1.05}
+  .mono{font-family:var(--mono);font-size:12px}
+
+  .lines{display:flex;flex-direction:column;gap:5px}
+  .lines i{height:6px;background:var(--ink);border-radius:2px;opacity:.72;display:block}
+  .lines.short i:nth-child(1){width:92%}
+  .lines.short i:nth-child(2){width:80%}
+  .lines.short i:nth-child(3){width:60%}
+  .lines.long i:nth-child(1){width:100%}
+  .lines.long i:nth-child(2){width:96%}
+  .lines.long i:nth-child(3){width:93%}
+  .lines.long i:nth-child(4){width:88%}
+  .lines.long i:nth-child(5){width:78%}
+  .lines.long i:nth-child(6){width:90%}
+  .lines.long i:nth-child(7){width:65%}
+
+  .thumb{
+    aspect-ratio: 16/9;
+    background:
+      repeating-linear-gradient(135deg, transparent 0 8px, rgba(0,0,0,.08) 8px 9px),
+      var(--paper-2);
+    border:2px solid var(--ink);border-radius:4px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  }
+  .thumb.square{aspect-ratio:1/1}
+
+  .codeblock{
+    background:var(--ink);color:#eae4d2;
+    border-radius:5px;padding:10px;font-family:var(--mono);font-size:11px;
+    line-height:1.55;overflow:hidden;border:2px solid var(--ink);
+  }
+  .codeblock .k{color:#f5c24a}
+  .codeblock .s{color:#8bc39a}
+  .codeblock .c{color:#8f8a7a}
+
+  .pill{
+    display:inline-flex;align-items:center;gap:5px;
+    border:1.5px solid var(--ink);padding:2px 10px;border-radius:999px;
+    font-family:var(--mono);font-size:11px;background:#fffef7;
+  }
+  .pill.hi{background:var(--accent-3)}
+  .pill.ink{background:var(--ink);color:var(--paper)}
+  .pill.blue{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  /* kind badges matching real code */
+  .kind-post{
+    display:inline-block;background:var(--accent);color:#fafafa;
+    border:1.5px solid var(--accent);padding:1px 10px;border-radius:999px;
+    font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
+  }
+  .kind-note{
+    display:inline-block;background:transparent;color:var(--ink-3);
+    border:1.5px solid var(--ink-3);padding:1px 10px;border-radius:999px;
+    font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;
+  }
+
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    border:2px solid var(--ink);padding:5px 12px;border-radius:5px;
+    font-family:var(--hand);font-size:14px;background:#fffef7;
+    box-shadow:2px 2px 0 var(--ink);
+  }
+  .btn.primary{background:var(--ink);color:var(--paper)}
+  .btn.blue{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+  /* mesh canvas */
+  .meshcanvas{
+    position:relative;
+    background:
+      radial-gradient(circle at 20px 20px, rgba(0,0,0,.09) 1px, transparent 1.4px) 0 0/20px 20px,
+      var(--paper-2);
+    border:2px solid var(--ink);border-radius:5px;overflow:hidden;
+  }
+  .node{
+    position:absolute;border:2px solid var(--ink);background:#fffef7;
+    border-radius:999px;padding:3px 10px;font-family:var(--hand);font-size:13px;
+    white-space:nowrap;transform:translate(-50%,-50%);
+    box-shadow:2px 2px 0 rgba(0,0,0,.15);
+  }
+  .node.big{font-family:var(--hand-title);font-size:18px;padding:5px 14px;background:var(--accent-3)}
+  .node.dark{background:var(--ink);color:var(--paper)}
+  .node.ring{background:transparent;border-style:dashed}
+  .node.concept{background:var(--accent);color:#fff;border-color:var(--ink)}
+  .edge{position:absolute;height:2px;background:var(--ink);transform-origin:left center;opacity:.7}
+  .edge.dash{background:repeating-linear-gradient(90deg,var(--ink) 0 5px,transparent 5px 9px);height:2px}
+  .edge.red{background:var(--accent-2);opacity:.9}
+
+  /* QAChips card */
+  .qa-input{
+    display:flex;align-items:center;gap:6px;
+    border:2px solid var(--ink);border-radius:999px;
+    padding:6px 12px;font-family:var(--mono);font-size:12px;background:#fffef7;
+    color:var(--ink-3);
+  }
+  .qa-card{
+    border:2px solid var(--ink);border-radius:6px;background:#fffef7;
+    padding:8px 10px;display:flex;flex-direction:column;gap:4px;
+  }
+  .qa-card .q{display:flex;align-items:center;gap:6px;justify-content:space-between}
+  .qa-card .q-text{font-family:var(--hand);font-size:14px;font-weight:700}
+  .tier-badge{font-family:var(--mono);font-size:9px;padding:1px 6px;border:1px solid var(--ink-3);border-radius:3px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.08em}
+  .tier-badge.note{background:transparent}
+  .tier-badge.concept{background:var(--accent-3)}
+  .tier-badge.global{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .qa-card .a{font-size:13px;line-height:1.5;color:var(--ink-2);display:none}
+  .qa-card.open .a{display:block}
+
+  .row{display:flex;gap:8px;align-items:center}
+  .col{display:flex;flex-direction:column;gap:8px}
+  .space-between{justify-content:space-between}
+  .wrap{flex-wrap:wrap}
+  .grow{flex:1}
+
+  .tweaks-panel{
+    position:fixed;right:18px;bottom:18px;z-index:100;
+    background:#fffef7;border:2px solid var(--ink);
+    border-radius:var(--radius);padding:12px 14px;
+    box-shadow:5px 5px 0 rgba(0,0,0,.15);
+    font-family:var(--hand);font-size:14px;
+    min-width:240px;display:none;
+  }
+  .tweaks-panel.open{display:block}
+  .tweaks-panel h4{font-family:var(--hand-title);font-size:22px;margin:0 0 8px}
+  .tweaks-panel .row{justify-content:space-between;margin:6px 0}
+  .tweaks-toggle{
+    position:fixed;right:18px;bottom:18px;z-index:99;
+    background:var(--ink);color:var(--paper);border:2px solid var(--ink);
+    padding:8px 14px;border-radius:999px;cursor:pointer;
+    font-family:var(--hand);font-size:14px;
+    box-shadow:3px 3px 0 rgba(0,0,0,.15);
+  }
+
+  body[data-density="tight"] .frame{padding:14px}
+  body[data-density="tight"] .screen .body{min-height:260px}
+  body[data-density="loose"] .frame{padding:30px}
+  body[data-density="loose"] .screen .body{min-height:380px}
+  body[data-theme="dark-preview"] .screen{background:#0a0a0a;color:#fafafa}
+  body[data-theme="dark-preview"] .screen .box{background:#141414;color:#fafafa;border-color:#fafafa}
+  body[data-theme="dark-preview"] .screen .meshcanvas{background:#141414}
+
+  .w-topbar{
+    display:flex;align-items:center;gap:6px;
+    padding:4px 8px;border-bottom:1.5px solid var(--ink);margin-bottom:6px;
+  }
+  .w-topbar .logo{font-family:var(--hand-title);font-size:18px}
+  .w-topbar .spc{flex:1}
+
+  .slot{display:flex;flex-direction:column;gap:8px}
+  .slot .row{border-bottom:1.5px dashed var(--ink);padding-bottom:6px}
+  .slot .row:last-child{border-bottom:0}
+
+  /* annotation */
+  .note{
+    font-family:var(--hand);font-size:12px;color:var(--accent-2);
+    border-left:2px solid var(--accent-2);padding:2px 6px;margin-top:4px;
+  }
+  .note::before{content:"✎ "}
+</style>
+</head>
+<body data-density="normal" data-theme="paper">
+
+<header class="topbar">
+  <div class="brand"><span class="dot"></span>meshblog</div>
+  <div class="meta">/wireframes/v2 · 실제 리포 구조 반영</div>
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="overview">개요</button>
+    <button class="tab" data-tab="A">A · Mesh-first</button>
+    <button class="tab" data-tab="B">B · Reader-first</button>
+    <button class="tab" data-tab="C">C · Wiki-dense</button>
+    <button class="tab" data-tab="mobile">모바일</button>
+  </nav>
+</header>
+
+<!-- ==================== OVERVIEW ==================== -->
+<main id="overview" class="page active">
+  <section class="intro">
+    <div class="label" style="font-family:var(--mono);color:var(--accent-2)">brief — v2</div>
+    <h1>meshblog — 재설계 와이어프레임</h1>
+    <div class="sub">실제 리포(JaeyeonBang/meshblog)의 구조에 맞춤: posts+notes, QAChips, 2축 그래프, Astro islands.</div>
+    <p>3가지 방향은 <b>graph / post / QAChips가 경험에서 차지하는 비중</b>을 다르게 가져갑니다. 에디터 화면은 없음 — Obsidian vault에서 편집 → 빌드 파이프라인이 가공하는 정적 사이트.</p>
+    <div class="chip-row">
+      <span class="chip">routes: / · /posts/[slug] · /notes/[slug] · /graph</span>
+      <span class="chip">QAChips (note / concept / global)</span>
+      <span class="chip">graph: note×concept × L1/L2/L3</span>
+      <span class="chip">tokens: #fafafa · #1d4ed8 · dark auto</span>
+    </div>
+  </section>
+
+  <section class="directions">
+    <div class="dcard">
+      <div class="tag">Direction A</div>
+      <h3>Mesh-first</h3>
+      <p><code class="mono">/</code>에 지식 그래프가 히어로로. 아래에 최신 posts + global QAChips. 탐험형 독자 우선.</p>
+      <ul>
+        <li>홈 = 인터랙티브 mesh canvas (mode/level 토글)</li>
+        <li>노드 클릭 → posts/notes 페이지로 라우팅</li>
+        <li>Q&A는 그래프 아래 2차 요소</li>
+      </ul>
+      <div class="row"><span class="swatch" style="background:var(--accent)"></span>강조: 탐험 / 발견</div>
+    </div>
+    <div class="dcard">
+      <div class="tag">Direction B</div>
+      <h3>Reader-first</h3>
+      <p>피드 중심. 홈은 최신 posts 카드, 우측에 global QAChips + mini mesh. notes는 별도 섹션으로 분리.</p>
+      <ul>
+        <li>홈 = posts 피드 + QA 사이드</li>
+        <li>상세 = prose 65ch + 하단 per-page QAChips</li>
+        <li>긴 글/코드 블록에 최적</li>
+      </ul>
+      <div class="row"><span class="swatch" style="background:var(--ink)"></span>강조: 가독성 / 깊이</div>
+    </div>
+    <div class="dcard">
+      <div class="tag">Direction C</div>
+      <h3>Wiki-dense</h3>
+      <p>posts와 notes를 한 스트림으로 평평하게. kind-badge로만 구분. backlinks와 개념 클러스터가 1급.</p>
+      <ul>
+        <li>홈 = 통합 스트림 + 개념 클라우드</li>
+        <li>상세 = 좌 TOC / 본문 / 우 backlinks+QA</li>
+        <li>atomic note 많은 vault에 적합</li>
+      </ul>
+      <div class="row"><span class="swatch" style="background:var(--accent-3)"></span>강조: 구조 / 밀도</div>
+    </div>
+  </section>
+
+  <section class="frames">
+    <div class="frame">
+      <header>
+        <h2>세 방향의 홈 스케치</h2>
+        <span class="id">OV-01</span>
+        <div class="desc">모두 정적 Astro 페이지. React island는 QAChips(<code class="mono">client:visible</code>) / GraphView(<code class="mono">client:only</code>) 두 곳.</div>
+      </header>
+
+      <div class="screens">
+        <!-- A mini -->
+        <div class="screen half">
+          <span class="stamp">A · Home</span>
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">meshblog.dev</div></div>
+          <div class="body">
+            <div class="w-topbar">
+              <span class="logo">·meshblog</span><span class="mono" style="color:var(--ink-3)">posts · notes · graph</span>
+              <span class="spc"></span><span class="pill">atom</span>
+            </div>
+            <div style="display:grid;grid-template-rows:200px 1fr;gap:8px;height:320px">
+              <div class="meshcanvas" id="meshOV-A"></div>
+              <div class="col" style="gap:6px">
+                <div class="row wrap"><span class="pill hi">mode: notes</span><span class="pill">concepts</span><span class="pill hi">L1</span><span class="pill">L2</span><span class="pill">L3</span></div>
+                <div class="box"><div class="label">latest · posts</div>
+                  <div class="col" style="gap:2px;margin-top:2px">
+                    <div class="txt">· <span class="kind-post">post</span> 왜 meshblog를 만들었나</div>
+                    <div class="txt">· <span class="kind-post">post</span> SQLite is all you need</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- B mini -->
+        <div class="screen half">
+          <span class="stamp">B · Home</span>
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">meshblog.dev</div></div>
+          <div class="body">
+            <div class="w-topbar">
+              <span class="logo">·meshblog</span>
+              <span class="mono" style="color:var(--ink-3)">a 2nd-brain blog</span>
+              <span class="spc"></span><span class="pill">graph</span><span class="pill">notes</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 220px;gap:10px;height:320px">
+              <div class="col">
+                <div class="box">
+                  <div class="row"><span class="kind-post">post</span><span class="mono" style="color:var(--ink-3)">2026-04-19 · 7 min</span></div>
+                  <div class="hh" style="font-size:24px;margin-top:4px">왜 meshblog를 만들었나</div>
+                  <div class="lines short" style="margin-top:4px"><i></i><i></i><i></i></div>
+                </div>
+                <div class="box">
+                  <div class="row"><span class="kind-post">post</span><span class="mono" style="color:var(--ink-3)">2026-04-14 · 6 min</span></div>
+                  <div class="h">SQLite is all you need</div>
+                  <div class="lines short" style="margin-top:4px"><i></i><i></i></div>
+                </div>
+                <div class="box ghost"><div class="mono" style="color:var(--ink-3);text-align:center">↓ more posts</div></div>
+              </div>
+              <div class="col">
+                <div class="box">
+                  <div class="label">vault에 질문</div>
+                  <div class="qa-input" style="margin-top:4px">⌕ 검색...</div>
+                  <div class="col" style="gap:4px;margin-top:6px">
+                    <div class="qa-card"><div class="q"><span class="q-text">meshblog는 뭐가 다른가?</span><span class="tier-badge global">global</span></div></div>
+                    <div class="qa-card"><div class="q"><span class="q-text">graph RAG란?</span><span class="tier-badge concept">concept</span></div></div>
+                  </div>
+                </div>
+                <div class="box ghost grow"><div class="label">mini mesh</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- C mini -->
+        <div class="screen full">
+          <span class="stamp">C · Home (posts + notes 통합)</span>
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">meshblog.dev</div></div>
+          <div class="body">
+            <div class="w-topbar">
+              <span class="logo">·meshblog</span><span class="mono" style="color:var(--ink-3)">everything</span>
+              <span class="spc"></span><span class="pill">all</span><span class="pill hi">posts</span><span class="pill">notes</span><span class="pill">graph</span>
+            </div>
+            <div style="display:grid;grid-template-columns:180px 1fr 220px;gap:10px;height:300px">
+              <div class="box col">
+                <div class="label">concept cloud</div>
+                <div class="row wrap" style="gap:4px;margin-top:4px">
+                  <span class="pill" style="font-size:14px">llm</span>
+                  <span class="pill">rag</span>
+                  <span class="pill" style="font-size:13px">astro</span>
+                  <span class="pill">sqlite</span>
+                  <span class="pill" style="font-size:11px">embedding</span>
+                  <span class="pill" style="font-size:10px">faq</span>
+                  <span class="pill" style="font-size:10px">ssg</span>
+                </div>
+              </div>
+              <div class="col">
+                <div class="box row"><span class="kind-post">post</span><span class="h grow">왜 meshblog를 만들었나</span><span class="mono" style="color:var(--ink-3)">7m</span></div>
+                <div class="box row"><span class="kind-note">note</span><span class="txt grow">knowledge-graphs.md</span><span class="mono" style="color:var(--ink-3)">2m</span></div>
+                <div class="box row"><span class="kind-note">note</span><span class="txt grow">rag-retrieval-augmented-generation.md</span><span class="mono" style="color:var(--ink-3)">3m</span></div>
+                <div class="box row"><span class="kind-post">post</span><span class="h grow">SQLite is all you need</span><span class="mono" style="color:var(--ink-3)">6m</span></div>
+                <div class="box row"><span class="kind-note">note</span><span class="txt grow">astro-static-site.md</span><span class="mono" style="color:var(--ink-3)">2m</span></div>
+              </div>
+              <div class="col">
+                <div class="box"><div class="label">이 vault에 질문</div>
+                  <div class="qa-input" style="margin-top:4px">⌕ ...</div>
+                </div>
+                <div class="box ghost grow"><div class="label">mini mesh</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ==================== DIRECTION A ==================== -->
+<main id="A" class="page">
+  <section class="intro">
+    <div class="label" style="font-family:var(--mono);color:var(--accent-2)">direction A</div>
+    <h1>Mesh-first — 그래프가 히어로</h1>
+    <p><code class="mono">/</code>가 거의 <code class="mono">/graph</code>와 같습니다. posts와 notes는 그래프의 노드. 상단 mode × level 토글(실제 <code class="mono">GraphView.tsx</code>와 동일), 클릭 시 <code class="mono">notes-manifest.json</code>을 통해 정확한 route로.</p>
+    <div class="chip-row">
+      <span class="chip">home = graph</span>
+      <span class="chip">node.type: note / concept</span>
+      <span class="chip">URL sync: ?mode=&level=</span>
+      <span class="chip">best for: 탐색 독자</span>
+    </div>
+  </section>
+
+  <section class="frames">
+    <div class="frame">
+      <header>
+        <h2>Home · 지식 그래프</h2>
+        <span class="id">A-01</span>
+        <div class="desc">상단 toolbar(Mode/Level)가 실제 GraphView와 1:1. 좌: 선택 노드 프리뷰 / 우: global QAChips.</div>
+      </header>
+      <div class="screens">
+        <div class="screen full">
+          <span class="stamp">A-01 · /</span>
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">meshblog.dev/?mode=note&level=1</div></div>
+          <div class="body">
+            <div class="w-topbar">
+              <span class="logo">·meshblog</span>
+              <span class="spc"></span>
+              <span class="pill">posts</span><span class="pill">notes</span><span class="pill">graph</span>
+              <span class="pill">⌕</span>
+            </div>
+            <!-- controls row -->
+            <div class="row" style="padding:4px 2px;flex-wrap:wrap">
+              <span class="label" style="margin-right:4px">mode</span>
+              <span class="pill hi">●notes</span><span class="pill">○concepts</span>
+              <span style="width:14px"></span>
+              <span class="label" style="margin-right:4px">level</span>
+              <span class="pill hi">L1</span><span class="pill">L2</span><span class="pill">L3</span>
+              <span class="spc grow"></span>
+              <span class="mono" style="color:var(--ink-3)">21 nodes · 38 links</span>
+            </div>
+            <div style="display:grid;grid-template-columns:220px 1fr 260px;gap:10px;height:460px;margin-top:6px">
+              <div class="box col">
+                <div class="label">selected node</div>
+                <div class="row" style="margin-top:4px"><span class="kind-post">post</span></div>
+                <div class="hh" style="font-size:22px;margin-top:2px">왜 meshblog를 만들었나</div>
+                <div class="mono" style="color:var(--ink-3)">posts/21 · 7 min · 2026-04-19</div>
+                <div class="thumb" style="margin-top:6px">og image</div>
+                <div class="lines short"><i></i><i></i><i></i></div>
+                <div class="row wrap"><span class="pill">#blogging</span><span class="pill">#knowledge-graph</span></div>
+                <a class="btn blue">open post →</a>
+                <div class="label" style="margin-top:6px">neighbors (3)</div>
+                <div class="col" style="gap:2px">
+                  <div class="txt">· <span class="kind-note">note</span> knowledge-graphs</div>
+                  <div class="txt">· <span class="kind-note">note</span> rag</div>
+                  <div class="txt">· <span class="kind-post">post</span> chunking for embed.</div>
+                </div>
+              </div>
+              <div class="meshcanvas" id="meshA-big"></div>
+              <div class="col">
+                <div class="box"><div class="label">vault에 질문해보세요</div>
+                  <div class="qa-input" style="margin-top:6px">⌕</div>
+                  <div class="col" style="margin-top:6px;gap:5px">
+                    <div class="qa-card open">
+                      <div class="q"><span class="q-text">meshblog가 Medium과 다른 점?</span><span class="tier-badge global">global</span></div>
+                      <div class="a">생각 사이의 연결을 시각화하고, 독자가 그래프를 탐색하며...</div>
+                    </div>
+                    <div class="qa-card"><div class="q"><span class="q-text">왜 SQLite를 썼나?</span><span class="tier-badge concept">concept</span></div></div>
+                    <div class="qa-card"><div class="q"><span class="q-text">Astro islands의 트레이드오프?</span><span class="tier-badge note">note</span></div></div>
+                    <div class="qa-card"><div class="q"><span class="q-text">graph RAG의 한계는?</span><span class="tier-badge concept">concept</span></div></div>
+                  </div>
+                </div>
+                <div class="box ghost grow"><div class="label">recent (5)</div>
+                  <div class="col" style="gap:1px;margin-top:3px">
+                    <div class="txt">· <span class="kind-post">p</span> shipping-solo</div>
+                    <div class="txt">· <span class="kind-note">n</span> louvain-comm.</div>
+                    <div class="txt">· <span class="kind-post">p</span> chunking-embed</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="note">annotation: mode/level 변경 시 history.replaceState로 ?mode=&level=&zoom= 동기화 (실제 GraphView 동작)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <header>
+        <h2>/posts/[slug] · 그래프가 배경으로 남은 상세</h2>
+        <span class="id">A-02</span>
+        <div class="desc">그래프 위에 sheet 형태로 글이 열림. 좌상단 "back to mesh". QAChips는 글 아래 per-page scope.</div>
+      </header>
+      <div class="screens">
+        <div class="screen full">
+          <span class="stamp">A-02 · /posts/why-i-built-meshblog</span>
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">meshblog.dev/posts/why-i-built-meshblog</div></div>
+          <div class="body" style="position:relative">
+            <div class="meshcanvas" id="meshA-post" style="position:absolute;inset:0;opacity:.3"></div>
+            <div class="box" style="position:relative;margin:16px auto;max-width:720px;padding:20px 24px;box-shadow:8px 8px 0 rgba(0,0,0,.15)">
+              <div class="row space-between">
+                <span class="pill">← /graph</span>
+                <div class="row"><span class="pill">backlinks 4</span><span class="pill">share</span></div>
+              </div>
+              <div class="row" style="margin-top:10px"><span class="kind-post">post</span><span class="mono" style="color:var(--ink-3)">2026-04-19 · 7 min</span></div>
+              <div class="hh" style="margin-top:4px">왜 meshblog를 만들었나</div>
+              <div class="row wrap" style="margin-top:4px">
+                <a class="mono" style="color:var(--ink-3)">#blogging</a>
+                <a class="mono" style="color:var(--ink-3)">#knowledge-graph</a>
+                <a class="mono" style="color:var(--ink-3)">#design</a>
+              </div>
+              <div class="thumb" style="margin-top:10px">og image / hero</div>
+              <div class="h" style="margin-top:14px">기존 블로그의 문제</div>
+              <div class="lines long" style="margin-top:6px"><i></i><i></i><i></i><i></i></div>
+              <div class="codeblock" style="margin-top:10px">
+                <div><span class="c"># retrieve.py</span></div>
+                <div><span class="k">def</span> retrieve(q, k=<span class="s">5</span>):</div>
+                <div>&nbsp;&nbsp;<span class="k">return</span> index.search(q, k)</div>
+              </div>
+              <div class="lines long" style="margin-top:10px"><i></i><i></i><i></i></div>
+              <!-- QAChips for this page -->
+              <div class="box" style="margin-top:14px;background:var(--paper-2)">
+                <div class="label">이 글에 질문해보세요</div>
+                <div class="qa-input" style="margin-top:4px">⌕</div>
+                <div class="col" style="margin-top:6px;gap:5px">
+                  <div class="qa-card open">
+                    <div class="q"><span class="q-text">왜 연결 구조가 중요한가?</span><span class="tier-badge note">note</span></div>
+                    <div class="a">한 노트가 다른 노트를 참조할 때 그건 개념 사이의 의존성이고...</div>
+                  </div>
+                  <div class="qa-card"><div class="q"><span class="q-text">Obsidian과 비교하면?</span><span class="tier-badge concept">concept</span></div></div>
+                  <div class="qa-card"><div class="q"><span class="q-text">공개 블로그로서의 제약?</span><span class="tier-badge note">note</span></div></div>
+                </div>
+              </div>
+              <!-- related -->
+              <div class="box" style="margin-top:10px">
+                <div class="label">관련 노트</div>
+                <div class="col" style="gap:2px;margin-top:4px">
+                  <div class="txt">→ <span class="kind-note">note</span> knowledge-graphs.md</div>
+                  <div class="txt">→ <span class="kind-post">post</span> chunking-for-embeddings</div>
+                  <div class="txt">→ <span class="kind-note">note</span> obsidian-workflows.md</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <header>
+        <h2>/graph · 풀 그래프 뷰</h2>
+        <span class="id">A-03</span>
+        <div class="desc">홈의 그래프와 동일하지만 풀 화면. URL query로 공유 가능.</div>
+      </header>
+      <div class="screens">
+        <div class="screen full">
+          <span class="stamp">A-03 · /graph?mode=concept&level=2</span>
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">meshblog.dev/graph?mode=concept&level=2</div></div>
+          <div class="body">
+            <div class="w-topbar">
+              <span class="logo">·meshblog</span><span class="mono" style="color:var(--ink-3)">/graph</span>
+              <span class="spc"></span>
+              <span class="pill">mode: concept</span><span class="pill hi">L2</span>
+              <span class="pill">share link</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 240px;gap:10px;height:480px">
+              <div class="meshcanvas" id="meshA-full"></div>
+              <div class="col">
+                <div class="box"><div class="label">selected concept</div>
+                  <div class="hh" style="font-size:22px">retrieval-augmented-generation</div>
+                  <div class="mono" style="color:var(--ink-3)">covers 8 notes · 3 posts</div>
+                  <div class="lines short" style="margin-top:6px"><i></i><i></i><i></i></div>
+                  <div class="row wrap" style="margin-top:6px">
+                    <span class="pill">llm</span><span class="pill">embedding</span>
+                  </div>
+                </div>
+                <div class="box"><div class="label">top notes in this concept</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="txt">· graph-rag intro</div>
+                    <div class="txt">· chunking-for-embeddings</div>
+                    <div class="txt">· llm-generated-qa</div>
+                  </div>
+                </div>
+                <div class="box ghost grow"><div class="label">legend</div>
+                  <div class="col" style="gap:3px;margin-top:4px">
+                    <div class="row"><span class="swatch" style="background:var(--accent)"></span><span class="mono">concept</span></div>
+                    <div class="row"><span class="swatch" style="background:#fffef7"></span><span class="mono">note</span></div>
+                    <div class="row"><span class="swatch" style="background:var(--accent-3)"></span><span class="mono">hub (high PR)</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ==================== DIRECTION B ==================== -->
+<main id="B" class="page">
+  <section class="intro">
+    <div class="label" style="font-family:var(--mono);color:var(--accent-2)">direction B</div>
+    <h1>Reader-first — 읽기 우선, mesh는 옆</h1>
+    <p>홈은 전통적 블로그 피드. posts와 notes가 나란한 스트림이 아니라 섹션으로 분리됨 (notes는 "더 작은 조각"). 그래프는 <code class="mono">/graph</code>에서만, 글 옆에는 mini-mesh 위젯만.</p>
+    <div class="chip-row">
+      <span class="chip">posts feed + notes archive</span>
+      <span class="chip">prose max-width 65ch</span>
+      <span class="chip">per-page QAChips 하단</span>
+      <span class="chip">best for: 깊게 읽기</span>
+    </div>
+  </section>
+
+  <section class="frames">
+    <div class="frame">
+      <header>
+        <h2>/ · 피드</h2>
+        <span class="id">B-01</span>
+        <div class="desc">좌: 태그/아카이브 / 중앙: posts 카드 + notes 섹션 / 우: global QAChips + mini mesh.</div>
+      </header>
+      <div class="screens">
+        <div class="screen full">
+          <span class="stamp">B-01 · /</span>
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">meshblog.dev</div></div>
+          <div class="body">
+            <div class="w-topbar">
+              <span class="logo">·meshblog</span>
+              <span class="mono" style="color:var(--ink-3)">2nd-brain blog</span>
+              <span class="spc"></span>
+              <span class="pill">posts</span><span class="pill">notes</span><span class="pill">graph</span>
+              <span class="pill ink">⌘K</span>
+            </div>
+            <div style="display:grid;grid-template-columns:200px 1fr 260px;gap:10px;height:480px">
+              <div class="col">
+                <div class="box"><div class="label">tags</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="txt"><b>· all</b></div>
+                    <div class="txt">· blogging (4)</div>
+                    <div class="txt">· llm (8)</div>
+                    <div class="txt">· rag (5)</div>
+                    <div class="txt">· astro (3)</div>
+                    <div class="txt">· sqlite (4)</div>
+                  </div>
+                </div>
+                <div class="box ghost"><div class="label">archive</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="mono">2026 · 12</div>
+                    <div class="mono">2025 · 0</div>
+                  </div>
+                </div>
+                <div class="box grow ghost"></div>
+              </div>
+              <div class="col">
+                <div class="box">
+                  <div class="row"><span class="kind-post">post</span><span class="mono" style="color:var(--ink-3)">2026-04-19 · 7 min</span></div>
+                  <div class="hh" style="font-size:30px;margin-top:4px">왜 meshblog를 만들었나</div>
+                  <div class="lines short" style="margin-top:4px"><i></i><i></i><i></i></div>
+                  <div class="row wrap" style="margin-top:6px"><span class="pill">#blogging</span><span class="pill">#design</span></div>
+                </div>
+                <div class="box">
+                  <div class="row">
+                    <div class="thumb" style="width:140px;flex-shrink:0">og</div>
+                    <div class="col grow">
+                      <div class="row"><span class="kind-post">post</span><span class="mono" style="color:var(--ink-3)">2026-04-14 · 6 min</span></div>
+                      <div class="h">SQLite is all you need</div>
+                      <div class="lines short"><i></i><i></i></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="box">
+                  <div class="row">
+                    <div class="thumb" style="width:140px;flex-shrink:0">og</div>
+                    <div class="col grow">
+                      <div class="row"><span class="kind-post">post</span><span class="mono" style="color:var(--ink-3)">2026-04-10 · 5 min</span></div>
+                      <div class="h">Astro islands · when to hydrate</div>
+                      <div class="lines short"><i></i><i></i></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="box filled" style="padding-top:6px">
+                  <div class="label">notes · atomic</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="row space-between"><span class="txt">· <span class="kind-note">note</span> knowledge-graphs</span><span class="mono" style="color:var(--ink-3)">2m</span></div>
+                    <div class="row space-between"><span class="txt">· <span class="kind-note">note</span> rag</span><span class="mono" style="color:var(--ink-3)">3m</span></div>
+                    <div class="row space-between"><span class="txt">· <span class="kind-note">note</span> louvain-communities</span><span class="mono" style="color:var(--ink-3)">4m</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="box">
+                  <div class="label">vault에 질문</div>
+                  <div class="qa-input" style="margin-top:4px">⌕ e.g. "RAG란?"</div>
+                  <div class="col" style="gap:4px;margin-top:6px">
+                    <div class="qa-card open"><div class="q"><span class="q-text">meshblog는 뭐가 다른가?</span><span class="tier-badge global">global</span></div><div class="a">개인 블로그를 지식 그래프 구조로...</div></div>
+                    <div class="qa-card"><div class="q"><span class="q-text">왜 Astro?</span><span class="tier-badge concept">concept</span></div></div>
+                    <div class="qa-card"><div class="q"><span class="q-text">Q&A는 어떻게 생성되나?</span><span class="tier-badge concept">concept</span></div></div>
+                  </div>
+                </div>
+                <div class="box"><div class="label">mini mesh</div>
+                  <div style="position:relative;height:130px;margin-top:4px">
+                    <span class="node big" style="left:50%;top:50%">meshblog</span>
+                    <span class="node concept" style="left:18%;top:20%">llm</span>
+                    <span class="node concept" style="left:82%;top:22%">graph</span>
+                    <span class="node" style="left:20%;top:78%">knowledge</span>
+                    <span class="node" style="left:80%;top:78%">astro</span>
+                  </div>
+                </div>
+                <div class="box ghost grow"><div class="label">atom · rss</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <header>
+        <h2>/posts/[slug] · 긴 글</h2>
+        <span class="id">B-02</span>
+        <div class="desc">본문은 max-width:65ch (실제 article.css). 우측에 TOC + mini-mesh + backlinks. 하단에 per-page QAChips.</div>
+      </header>
+      <div class="screens">
+        <div class="screen full">
+          <span class="stamp">B-02 · /posts/why-i-built-meshblog</span>
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">meshblog.dev/posts/why-i-built-meshblog</div></div>
+          <div class="body">
+            <div class="w-topbar">
+              <span class="logo">·meshblog</span><span class="mono" style="color:var(--ink-3)">/posts/why-i-built-meshblog</span>
+              <span class="spc"></span><span class="pill">⌘K</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 220px;gap:12px;height:520px">
+              <div class="col" style="overflow:hidden">
+                <div class="box">
+                  <div class="row"><span class="kind-post">post</span><span class="mono" style="color:var(--ink-3)">2026-04-19 · 7 min · blogging / design</span></div>
+                  <div class="hh" style="font-size:34px;margin-top:4px">왜 meshblog를 만들었나</div>
+                </div>
+                <div class="thumb">hero · og</div>
+                <div class="box">
+                  <div class="h">기존 블로그의 문제</div>
+                  <div class="lines long" style="margin-top:6px"><i></i><i></i><i></i><i></i></div>
+                  <div class="codeblock" style="margin-top:10px">
+                    <div><span class="c">// fuse 검색 예</span></div>
+                    <div><span class="k">const</span> fuse = <span class="k">new</span> Fuse(qas, {</div>
+                    <div>&nbsp;&nbsp;keys: [<span class="s">'question'</span>], threshold: <span class="s">0.4</span></div>
+                    <div>});</div>
+                  </div>
+                  <div class="lines long" style="margin-top:10px"><i></i><i></i></div>
+                </div>
+                <div class="box">
+                  <div class="h">연결의 가치</div>
+                  <div class="lines long" style="margin-top:6px"><i></i><i></i><i></i></div>
+                </div>
+                <!-- QAChips at bottom -->
+                <div class="box filled">
+                  <div class="label">이 글에 질문해보세요</div>
+                  <div class="qa-input" style="margin-top:4px">⌕</div>
+                  <div class="col" style="gap:4px;margin-top:6px">
+                    <div class="qa-card"><div class="q"><span class="q-text">왜 Medium이 아닌가?</span><span class="tier-badge note">note</span></div></div>
+                    <div class="qa-card open"><div class="q"><span class="q-text">graph 구조의 가치는?</span><span class="tier-badge concept">concept</span></div><div class="a">독자가 개념 사이의 의존성을 직접 탐색할 수 있게 됩니다...</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="box"><div class="label">contents</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="txt"><b>· 기존 블로그의 문제</b></div>
+                    <div class="txt">· 연결의 가치</div>
+                    <div class="txt">· LLM-generated Q&A</div>
+                    <div class="txt">· 왜 지금인가</div>
+                    <div class="txt">· 설계 원칙</div>
+                  </div>
+                </div>
+                <div class="box"><div class="label">related mesh</div>
+                  <div style="position:relative;height:110px;margin-top:4px">
+                    <span class="node big" style="left:50%;top:48%;font-size:14px">this</span>
+                    <span class="node concept" style="left:18%;top:22%">graph</span>
+                    <span class="node concept" style="left:82%;top:28%">llm</span>
+                    <span class="node" style="left:30%;top:80%">obsidian</span>
+                  </div>
+                </div>
+                <div class="box"><div class="label">backlinks (4)</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="txt">← shipping-solo</div>
+                    <div class="txt">← static-sites-2026</div>
+                    <div class="txt">← note: philosophy</div>
+                    <div class="txt">← note: obsidian-wf</div>
+                  </div>
+                </div>
+                <div class="box ghost grow"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <header>
+        <h2>/notes/[slug] · 조각 메모</h2>
+        <span class="id">B-03</span>
+        <div class="desc">post와 같은 레이아웃이지만 kind-badge가 다름. 짧으므로 우측 사이드만 유지, TOC는 생략 가능.</div>
+      </header>
+      <div class="screens">
+        <div class="screen full">
+          <span class="stamp">B-03 · /notes/knowledge-graphs</span>
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">meshblog.dev/notes/knowledge-graphs</div></div>
+          <div class="body">
+            <div class="w-topbar">
+              <span class="logo">·meshblog</span><span class="mono" style="color:var(--ink-3)">/notes/knowledge-graphs</span>
+              <span class="spc"></span><span class="pill">⌘K</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 220px;gap:12px;height:380px">
+              <div class="col">
+                <div class="box">
+                  <div class="row"><span class="kind-note">note</span><span class="mono" style="color:var(--ink-3)">2 min · notes/09</span></div>
+                  <div class="hh" style="font-size:28px;margin-top:4px">knowledge-graphs</div>
+                </div>
+                <div class="box">
+                  <div class="lines long"><i></i><i></i><i></i><i></i></div>
+                  <div class="codeblock" style="margin-top:8px">
+                    <div>graph.addEdge(a, b, {weight: <span class="s">0.8</span>})</div>
+                  </div>
+                  <div class="lines long" style="margin-top:8px"><i></i><i></i></div>
+                </div>
+                <div class="box filled"><div class="label">이 글에 질문</div>
+                  <div class="col" style="gap:4px;margin-top:4px">
+                    <div class="qa-card"><div class="q"><span class="q-text">PageRank는 어떻게 쓰는가?</span><span class="tier-badge concept">concept</span></div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="box"><div class="label">appears in</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="txt">→ <span class="kind-post">post</span> why-i-built-meshblog</div>
+                    <div class="txt">→ <span class="kind-post">post</span> pagerank-for-notes</div>
+                  </div>
+                </div>
+                <div class="box"><div class="label">concepts</div>
+                  <div class="row wrap" style="margin-top:4px">
+                    <span class="pill blue">graph</span><span class="pill blue">knowledge</span>
+                  </div>
+                </div>
+                <div class="box ghost grow"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ==================== DIRECTION C ==================== -->
+<main id="C" class="page">
+  <section class="intro">
+    <div class="label" style="font-family:var(--mono);color:var(--accent-2)">direction C</div>
+    <h1>Wiki-dense — posts와 notes를 평평하게</h1>
+    <p>posts/notes 경계를 흐림. 모든 글을 한 스트림으로 보여주고 kind-badge로만 구분. 홈 상단에 concept 클라우드. 상세 페이지는 3-column (TOC / prose / backlinks+QA).</p>
+    <div class="chip-row">
+      <span class="chip">flat stream</span>
+      <span class="chip">concept cloud</span>
+      <span class="chip">3-col detail</span>
+      <span class="chip">best for: atomic 많은 vault</span>
+    </div>
+  </section>
+
+  <section class="frames">
+    <div class="frame">
+      <header>
+        <h2>/ · 통합 스트림</h2>
+        <span class="id">C-01</span>
+        <div class="desc">concept cloud가 피드 위. 필터: all / posts / notes / concepts. 날짜 정렬 / PageRank 정렬 토글.</div>
+      </header>
+      <div class="screens">
+        <div class="screen full">
+          <span class="stamp">C-01 · /</span>
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">meshblog.dev</div></div>
+          <div class="body">
+            <div class="w-topbar">
+              <span class="logo">·meshblog</span>
+              <span class="spc"></span>
+              <span class="pill">graph</span><span class="pill">atom</span><span class="pill">⌘K</span>
+            </div>
+            <!-- concept cloud -->
+            <div class="box" style="margin-bottom:8px">
+              <div class="label">concepts · L1</div>
+              <div class="row wrap" style="gap:6px;margin-top:4px">
+                <span class="pill blue" style="font-size:16px">llm</span>
+                <span class="pill blue" style="font-size:15px">rag</span>
+                <span class="pill blue" style="font-size:14px">astro</span>
+                <span class="pill" style="font-size:13px">sqlite</span>
+                <span class="pill" style="font-size:12px">embedding</span>
+                <span class="pill" style="font-size:12px">graph</span>
+                <span class="pill" style="font-size:11px">knowledge</span>
+                <span class="pill" style="font-size:11px">ssg</span>
+                <span class="pill" style="font-size:10px">fuse</span>
+                <span class="pill" style="font-size:10px">pagerank</span>
+                <span class="pill" style="font-size:10px">obsidian</span>
+                <span class="pill" style="font-size:10px">korean</span>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:180px 1fr 220px;gap:10px;height:440px">
+              <div class="col">
+                <div class="box"><div class="label">filter</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="txt"><b>· all (41)</b></div>
+                    <div class="txt">· posts (11)</div>
+                    <div class="txt">· notes (27)</div>
+                    <div class="txt">· concepts (18)</div>
+                  </div>
+                </div>
+                <div class="box"><div class="label">sort</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="txt"><b>· recent</b></div>
+                    <div class="txt">· by pagerank</div>
+                    <div class="txt">· by backlinks</div>
+                  </div>
+                </div>
+                <div class="box ghost grow"></div>
+              </div>
+              <!-- flat feed -->
+              <div class="col">
+                <div class="box">
+                  <div class="row space-between">
+                    <div class="row"><span class="kind-post">post</span><span class="h">왜 meshblog를 만들었나</span></div>
+                    <span class="mono" style="color:var(--ink-3)">7m · 2026-04-19</span>
+                  </div>
+                  <div class="lines short" style="margin-top:4px"><i></i><i></i></div>
+                </div>
+                <div class="box">
+                  <div class="row space-between">
+                    <div class="row"><span class="kind-note">note</span><span class="txt"><b>louvain-communities.md</b></span></div>
+                    <span class="mono" style="color:var(--ink-3)">4m</span>
+                  </div>
+                  <div class="lines short" style="margin-top:4px"><i></i><i></i></div>
+                </div>
+                <div class="box">
+                  <div class="row space-between">
+                    <div class="row"><span class="kind-post">post</span><span class="h">PageRank for personal notes</span></div>
+                    <span class="mono" style="color:var(--ink-3)">8m</span>
+                  </div>
+                </div>
+                <div class="box">
+                  <div class="row space-between">
+                    <div class="row"><span class="kind-note">note</span><span class="txt"><b>openai-embeddings.md</b></span></div>
+                    <span class="mono" style="color:var(--ink-3)">3m</span>
+                  </div>
+                </div>
+                <div class="box">
+                  <div class="row space-between">
+                    <div class="row"><span class="kind-post">post</span><span class="h">SQLite is all you need</span></div>
+                    <span class="mono" style="color:var(--ink-3)">6m</span>
+                  </div>
+                </div>
+                <div class="box">
+                  <div class="row space-between">
+                    <div class="row"><span class="kind-note">note</span><span class="txt"><b>rag-retrieval-augmented-generation.md</b></span></div>
+                    <span class="mono" style="color:var(--ink-3)">3m</span>
+                  </div>
+                </div>
+                <div class="box ghost"><div class="mono" style="color:var(--ink-3);text-align:center">↓ 35 more</div></div>
+              </div>
+              <div class="col">
+                <div class="box"><div class="label">vault에 질문</div>
+                  <div class="qa-input" style="margin-top:4px">⌕</div>
+                </div>
+                <div class="box"><div class="label">top concepts (L1)</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="txt">· llm (14)</div>
+                    <div class="txt">· rag (11)</div>
+                    <div class="txt">· graph (9)</div>
+                    <div class="txt">· astro (6)</div>
+                  </div>
+                </div>
+                <div class="box ghost grow"><div class="label">mini mesh</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <header>
+        <h2>/posts · /notes 상세 (통합)</h2>
+        <span class="id">C-02</span>
+        <div class="desc">3-column: 좌 TOC / 중앙 prose / 우 concepts+backlinks+QA. post / note 구분은 badge만.</div>
+      </header>
+      <div class="screens">
+        <div class="screen full">
+          <span class="stamp">C-02 · detail</span>
+          <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">meshblog.dev/posts/pagerank-for-personal-notes</div></div>
+          <div class="body">
+            <div class="w-topbar">
+              <span class="logo">·meshblog</span><span class="mono" style="color:var(--ink-3)">posts / pagerank...</span>
+              <span class="spc"></span><span class="pill">⌘K</span><span class="pill">graph</span>
+            </div>
+            <div style="display:grid;grid-template-columns:180px 1fr 240px;gap:12px;height:500px">
+              <div class="col">
+                <div class="box"><div class="label">in this page</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="txt"><b>· 왜 pagerank</b></div>
+                    <div class="txt">· graphology로 구현</div>
+                    <div class="txt">· 결과 해석</div>
+                  </div>
+                </div>
+                <div class="box"><div class="label">other in #graph</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="txt">· louvain-communities</div>
+                    <div class="txt">· force-directed</div>
+                    <div class="txt">· knowledge-graphs</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="box">
+                  <div class="row"><span class="kind-post">post</span><span class="mono" style="color:var(--ink-3)">2026-04-13 · 8 min · graph</span></div>
+                  <div class="hh" style="font-size:30px;margin-top:4px">PageRank for personal notes</div>
+                </div>
+                <div class="box">
+                  <div class="h">왜 pagerank</div>
+                  <div class="lines long" style="margin-top:6px"><i></i><i></i><i></i></div>
+                  <div class="codeblock" style="margin-top:10px">
+                    <div><span class="k">import</span> graphology <span class="k">from</span> <span class="s">'graphology'</span></div>
+                    <div><span class="k">import</span> pagerank <span class="k">from</span> <span class="s">'graphology-metrics/centrality/pagerank'</span></div>
+                    <div><span class="k">const</span> scores = pagerank(g)</div>
+                  </div>
+                  <div class="lines long" style="margin-top:10px"><i></i><i></i><i></i></div>
+                </div>
+                <div class="box ghost grow"><div class="mono" style="color:var(--ink-3);text-align:center">↓ 결과 해석 / 한계</div></div>
+              </div>
+              <div class="col">
+                <div class="box"><div class="label">concepts</div>
+                  <div class="row wrap" style="margin-top:4px">
+                    <span class="pill blue">graph</span><span class="pill blue">pagerank</span><span class="pill blue">knowledge</span>
+                  </div>
+                </div>
+                <div class="box"><div class="label">backlinks (6)</div>
+                  <div class="col" style="gap:2px;margin-top:4px">
+                    <div class="txt">← why-i-built-meshblog</div>
+                    <div class="txt">← shipping-solo</div>
+                    <div class="txt">← louvain-communities</div>
+                    <div class="txt">← force-directed-graphs</div>
+                  </div>
+                </div>
+                <div class="box filled"><div class="label">이 글에 질문</div>
+                  <div class="qa-input" style="margin-top:4px">⌕</div>
+                  <div class="col" style="gap:4px;margin-top:4px">
+                    <div class="qa-card open"><div class="q"><span class="q-text">작은 vault에서도 유효한가?</span><span class="tier-badge note">note</span></div><div class="a">30노드 미만일 땐 차이가 미미...</div></div>
+                    <div class="qa-card"><div class="q"><span class="q-text">대안은?</span><span class="tier-badge concept">concept</span></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ==================== MOBILE ==================== -->
+<main id="mobile" class="page">
+  <section class="intro">
+    <div class="label" style="font-family:var(--mono);color:var(--accent-2)">mobile</div>
+    <h1>모바일 축약판</h1>
+    <p>핵심만 남김: graph는 별도 화면, QAChips는 각 글 하단, 우측 위젯은 아래로 접힘.</p>
+  </section>
+
+  <section class="frames">
+    <div class="frame">
+      <header><h2>홈 3종</h2><span class="id">M-01</span>
+        <div class="desc">방향별 모바일 홈.</div>
+      </header>
+      <div class="screens" style="grid-template-columns:repeat(3,1fr)">
+        <!-- A mobile -->
+        <div class="screen" style="grid-column:span 1">
+          <span class="stamp">A mobile</span>
+          <div class="body">
+            <div class="phone">
+              <div class="notch"></div>
+              <div class="col" style="gap:6px">
+                <div class="row space-between" style="padding:0 4px"><span class="brand" style="font-size:20px"><span class="dot"></span>meshblog</span><span class="pill">☰</span></div>
+                <div class="row wrap" style="padding:0 4px;gap:3px"><span class="pill hi">notes</span><span class="pill">concepts</span><span class="pill hi">L1</span></div>
+                <div class="box" style="padding:4px"><div class="meshcanvas" style="height:200px;position:relative">
+                  <span class="node big" style="left:50%;top:50%">mesh</span>
+                  <span class="node concept" style="left:20%;top:25%">llm</span>
+                  <span class="node concept" style="left:80%;top:30%">graph</span>
+                  <span class="node" style="left:28%;top:80%">rag</span>
+                  <span class="node" style="left:78%;top:78%">astro</span>
+                </div></div>
+                <div class="box"><div class="label">tap a node →</div><div class="txt">sheet로 글 열림</div></div>
+                <div class="box ghost"><div class="label">recent posts</div>
+                  <div class="txt">· <span class="kind-post">p</span> meshblog</div>
+                  <div class="txt">· <span class="kind-post">p</span> sqlite</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- B mobile -->
+        <div class="screen" style="grid-column:span 1">
+          <span class="stamp">B mobile</span>
+          <div class="body">
+            <div class="phone">
+              <div class="notch"></div>
+              <div class="col" style="gap:6px">
+                <div class="row space-between" style="padding:0 4px"><span class="brand" style="font-size:20px"><span class="dot"></span>meshblog</span><span class="pill">⌕</span></div>
+                <div class="box">
+                  <div class="row"><span class="kind-post">post</span><span class="mono" style="color:var(--ink-3)">7m</span></div>
+                  <div class="h" style="margin-top:2px">왜 meshblog를 만들었나</div>
+                  <div class="lines short" style="margin-top:4px"><i></i><i></i></div>
+                </div>
+                <div class="box">
+                  <div class="row"><span class="kind-post">post</span><span class="mono" style="color:var(--ink-3)">6m</span></div>
+                  <div class="h" style="margin-top:2px">SQLite is all you need</div>
+                </div>
+                <div class="box filled"><div class="label">notes</div>
+                  <div class="txt">· <span class="kind-note">n</span> knowledge-graphs</div>
+                  <div class="txt">· <span class="kind-note">n</span> rag</div>
+                </div>
+                <div class="box ghost"><div class="label">vault에 질문 →</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- C mobile -->
+        <div class="screen" style="grid-column:span 1">
+          <span class="stamp">C mobile</span>
+          <div class="body">
+            <div class="phone">
+              <div class="notch"></div>
+              <div class="col" style="gap:6px">
+                <div class="row space-between" style="padding:0 4px"><span class="brand" style="font-size:20px"><span class="dot"></span>meshblog</span><span class="pill">⌕</span></div>
+                <div class="box filled">
+                  <div class="label">concepts</div>
+                  <div class="row wrap" style="gap:3px;margin-top:3px">
+                    <span class="pill blue" style="font-size:13px">llm</span>
+                    <span class="pill blue" style="font-size:12px">rag</span>
+                    <span class="pill" style="font-size:11px">astro</span>
+                    <span class="pill" style="font-size:10px">sqlite</span>
+                  </div>
+                </div>
+                <div class="box row"><span class="kind-post">p</span><span class="h grow" style="font-size:16px">meshblog</span></div>
+                <div class="box row"><span class="kind-note">n</span><span class="txt grow">louvain</span></div>
+                <div class="box row"><span class="kind-post">p</span><span class="h grow" style="font-size:16px">pagerank</span></div>
+                <div class="box row"><span class="kind-note">n</span><span class="txt grow">embeddings</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="frame">
+      <header><h2>모바일 상세 + QAChips</h2><span class="id">M-02</span>
+        <div class="desc">상세는 세 방향이 수렴 — 글 읽기는 단순. 차이는 하단 위젯과 mini-mesh 유무.</div>
+      </header>
+      <div class="screens" style="grid-template-columns:repeat(3,1fr)">
+        <div class="screen" style="grid-column:span 1">
+          <span class="stamp">A · sheet</span>
+          <div class="body">
+            <div class="phone"><div class="notch"></div>
+              <div class="col" style="gap:6px">
+                <div class="row space-between" style="padding:0 4px"><span class="pill">← /graph</span><span class="pill">…</span></div>
+                <div class="box"><div class="row"><span class="kind-post">post</span></div><div class="hh" style="font-size:22px">meshblog를 만든 이유</div></div>
+                <div class="thumb">og</div>
+                <div class="box"><div class="lines long"><i></i><i></i><i></i></div></div>
+                <div class="codeblock">def retrieve(q): ...</div>
+                <div class="box filled"><div class="label">question</div>
+                  <div class="qa-input" style="margin-top:3px">⌕</div>
+                  <div class="qa-card" style="margin-top:4px"><div class="q"><span class="q-text">왜 연결인가?</span><span class="tier-badge note">n</span></div></div>
+                </div>
+                <div class="box"><div class="label">mini mesh</div>
+                  <div style="position:relative;height:64px;margin-top:4px">
+                    <span class="node big" style="left:50%;top:50%;font-size:12px">this</span>
+                    <span class="node concept" style="left:18%;top:30%;font-size:10px">llm</span>
+                    <span class="node" style="left:82%;top:30%;font-size:10px">rag</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="screen" style="grid-column:span 1">
+          <span class="stamp">B · reader</span>
+          <div class="body">
+            <div class="phone"><div class="notch"></div>
+              <div class="col" style="gap:6px">
+                <div class="row space-between" style="padding:0 4px"><span class="pill">← posts</span><span class="pill">Aa</span></div>
+                <div class="box"><div class="row"><span class="kind-post">post</span><span class="mono" style="color:var(--ink-3)">7m</span></div>
+                  <div class="hh" style="font-size:22px">meshblog를 만든 이유</div>
+                </div>
+                <div class="box"><div class="lines long"><i></i><i></i><i></i><i></i></div></div>
+                <div class="codeblock">def retrieve(q): ...</div>
+                <div class="box"><div class="lines long"><i></i><i></i></div></div>
+                <div class="box filled"><div class="label">이 글에 질문</div>
+                  <div class="col" style="gap:3px;margin-top:3px">
+                    <div class="qa-card"><div class="q"><span class="q-text">Medium과 차이?</span><span class="tier-badge note">n</span></div></div>
+                    <div class="qa-card"><div class="q"><span class="q-text">그래프 가치?</span><span class="tier-badge concept">c</span></div></div>
+                  </div>
+                </div>
+                <div class="box ghost"><div class="label">related</div><div class="txt">· knowledge-graphs</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="screen" style="grid-column:span 1">
+          <span class="stamp">C · note</span>
+          <div class="body">
+            <div class="phone"><div class="notch"></div>
+              <div class="col" style="gap:6px">
+                <div class="row space-between" style="padding:0 4px"><span class="pill">← all</span><span class="pill">⌕</span></div>
+                <div class="box"><div class="row"><span class="kind-note">note</span><span class="mono" style="color:var(--ink-3)">2m</span></div>
+                  <div class="hh" style="font-size:22px">knowledge-graphs</div>
+                </div>
+                <div class="box"><div class="lines long"><i></i><i></i><i></i></div></div>
+                <div class="box"><div class="label">concepts</div>
+                  <div class="row wrap" style="margin-top:3px"><span class="pill blue" style="font-size:11px">graph</span><span class="pill blue" style="font-size:11px">knowledge</span></div>
+                </div>
+                <div class="box"><div class="label">appears in (3)</div>
+                  <div class="col" style="gap:1px;margin-top:3px;font-size:13px">
+                    <div class="txt">→ why-i-built-meshblog</div>
+                    <div class="txt">→ pagerank-for-notes</div>
+                  </div>
+                </div>
+                <div class="box filled"><div class="qa-input">⌕ 이 노트에 질문</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ==================== TWEAKS ==================== -->
+<button class="tweaks-toggle" id="tweaksToggle">Tweaks ✎</button>
+<div class="tweaks-panel" id="tweaksPanel">
+  <h4>Tweaks</h4>
+  <div class="row"><span>레이아웃 밀도</span>
+    <select id="density">
+      <option value="tight">빽빽</option>
+      <option value="normal" selected>보통</option>
+      <option value="loose">넉넉</option>
+    </select>
+  </div>
+  <div class="row"><span>kind 강조</span>
+    <select id="kindStyle">
+      <option value="pill" selected>pill (기본)</option>
+      <option value="mono">모노 prefix</option>
+      <option value="bar">좌측 bar</option>
+    </select>
+  </div>
+  <div class="row"><span>accent</span>
+    <input type="color" id="accent" value="#1d4ed8" />
+  </div>
+  <div class="row"><span>paper</span>
+    <label class="row" style="gap:4px"><input type="checkbox" id="paperDots" checked> dots</label>
+  </div>
+</div>
+
+<script>
+/* tabs */
+(function(){
+  const tabs = document.querySelectorAll('.tab');
+  const pages = document.querySelectorAll('main.page');
+  function show(id){
+    tabs.forEach(t=>t.classList.toggle('active', t.dataset.tab===id));
+    pages.forEach(p=>p.classList.toggle('active', p.id===id));
+    try{localStorage.setItem('mb.tab', id);}catch(e){}
+    window.scrollTo({top:0});
+    setTimeout(redraw, 50);
+  }
+  tabs.forEach(t=>t.addEventListener('click', ()=>show(t.dataset.tab)));
+  try{
+    const saved = localStorage.getItem('mb.tab');
+    if(saved) show(saved);
+  }catch(e){}
+})();
+
+/* mesh draw */
+function drawMesh(el, config){
+  if(!el) return;
+  el.innerHTML = '';
+  const rect = el.getBoundingClientRect();
+  const W = rect.width || 400, H = rect.height || 300;
+  config.edges.forEach(([a,b, opts])=>{
+    const na = config.nodes[a], nb = config.nodes[b];
+    const x1 = na.x*W, y1 = na.y*H, x2 = nb.x*W, y2 = nb.y*H;
+    const dx = x2-x1, dy = y2-y1;
+    const len = Math.sqrt(dx*dx+dy*dy);
+    const ang = Math.atan2(dy, dx)*180/Math.PI;
+    const e = document.createElement('div');
+    e.className = 'edge ' + ((opts&&opts.dash)?'dash ':'') + ((opts&&opts.red)?'red ':'');
+    e.style.left = x1+'px'; e.style.top = y1+'px';
+    e.style.width = len+'px'; e.style.transform = `rotate(${ang}deg)`;
+    el.appendChild(e);
+  });
+  config.nodes.forEach((n)=>{
+    const d = document.createElement('div');
+    d.className = 'node' + (n.big?' big':'') + (n.dark?' dark':'') + (n.ring?' ring':'') + (n.concept?' concept':'');
+    d.style.left = (n.x*100)+'%';
+    d.style.top = (n.y*100)+'%';
+    d.textContent = n.label;
+    el.appendChild(d);
+  });
+}
+
+const gHome = {
+  nodes:[
+    {x:.48,y:.50,label:'meshblog', big:true},
+    {x:.20,y:.22,label:'llm', concept:true},
+    {x:.80,y:.20,label:'rag', concept:true},
+    {x:.15,y:.70,label:'graph', concept:true},
+    {x:.85,y:.75,label:'astro', concept:true},
+    {x:.55,y:.12,label:'v0.3', ring:true},
+    {x:.35,y:.85,label:'knowledge-graphs'},
+    {x:.65,y:.85,label:'pagerank'},
+    {x:.88,y:.40,label:'sqlite'},
+    {x:.10,y:.40,label:'embeddings'},
+  ],
+  edges:[[0,1],[0,2],[0,3],[0,4],[0,5,{dash:true}],[0,6],[0,7],[0,8],[0,9],
+    [1,2],[2,9],[3,6],[3,7],[4,8],[1,9,{red:true}]]
+};
+const gFull = {
+  nodes:[
+    {x:.45,y:.50,label:'meshblog', big:true},
+    {x:.18,y:.20,label:'llm', concept:true},
+    {x:.78,y:.18,label:'rag', concept:true},
+    {x:.12,y:.55,label:'graph', concept:true},
+    {x:.88,y:.55,label:'astro', concept:true},
+    {x:.30,y:.82,label:'sqlite', concept:true},
+    {x:.72,y:.82,label:'embed', concept:true},
+    {x:.50,y:.10,label:'faq', concept:true},
+    {x:.58,y:.30,label:'pagerank'},
+    {x:.32,y:.35,label:'louvain'},
+    {x:.25,y:.65,label:'kg'},
+    {x:.70,y:.65,label:'chunking'},
+    {x:.88,y:.30,label:'islands'},
+  ],
+  edges:[[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],
+    [8,0],[9,0],[10,3],[11,6],[12,4],[8,3],[9,3],[11,2,{red:true}],[10,7,{dash:true}]]
+};
+
+function redraw(){
+  ['meshOV-A','meshA-big','meshA-post','meshA-full'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) drawMesh(el, id==='meshA-full'?gFull:gHome);
+  });
+}
+window.addEventListener('load', redraw);
+window.addEventListener('resize', ()=>{clearTimeout(window.__r);window.__r=setTimeout(redraw,120)});
+
+/* tweaks */
+(function(){
+  const toggle = document.getElementById('tweaksToggle');
+  const panel = document.getElementById('tweaksPanel');
+  toggle.addEventListener('click', ()=>{
+    panel.classList.toggle('open');
+    toggle.style.display = panel.classList.contains('open') ? 'none' : '';
+  });
+  document.addEventListener('click', (e)=>{
+    if(!panel.contains(e.target) && e.target!==toggle && panel.classList.contains('open')){
+      panel.classList.remove('open'); toggle.style.display='';
+    }
+  });
+  document.getElementById('density').addEventListener('change', e=>{
+    document.body.dataset.density = e.target.value;
+    setTimeout(redraw, 50);
+  });
+  document.getElementById('accent').addEventListener('input', e=>{
+    document.documentElement.style.setProperty('--accent', e.target.value);
+    document.documentElement.style.setProperty('--post', e.target.value);
+  });
+  document.getElementById('paperDots').addEventListener('change', e=>{
+    document.body.style.backgroundImage = e.target.checked
+      ? "radial-gradient(rgba(0,0,0,.04) 1px, transparent 1px), radial-gradient(rgba(0,0,0,.03) 1px, transparent 1px)"
+      : "none";
+  });
+  document.getElementById('kindStyle').addEventListener('change', e=>{
+    document.body.dataset.kind = e.target.value;
+  });
+})();
+
+/* edit mode bridge */
+(function(){
+  window.addEventListener('message', (e)=>{
+    if(e.data?.type==='__activate_edit_mode'){
+      document.getElementById('tweaksPanel').classList.add('open');
+    }
+    if(e.data?.type==='__deactivate_edit_mode'){
+      document.getElementById('tweaksPanel').classList.remove('open');
+    }
+  });
+  window.parent.postMessage({type:'__edit_mode_available'}, '*');
+})();
+</script>
+</body>
+</html>

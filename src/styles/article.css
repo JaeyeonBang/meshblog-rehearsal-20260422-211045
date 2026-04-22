@@ -1,0 +1,205 @@
+/* article.css — prose styles for .prose class (markdown-rendered article bodies)
+ * Implements SPEC §5. No hex literals. No --meshblog-* tokens. Use --ink, --paper, etc.
+ */
+
+/* ── Prose container ──────────────────────────────────────────────────────── */
+
+.prose {
+  max-width: 60ch;
+  max-width: var(--w-prose);
+  font-family: var(--f-serif);
+  font-size: var(--fs-lg);
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+.prose p {
+  margin: 0 0 1.2em;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.prose pre {
+  overflow-x: auto;
+}
+
+/* ── Drop cap ─────────────────────────────────────────────────────────────── */
+
+.prose p.drop:first-letter {
+  font-family: var(--f-disp);
+  font-weight: 600;
+  font-size: 5em;
+  line-height: 0.85;
+  float: left;
+  margin: 0.08em 0.08em 0 0;
+  font-variation-settings: "opsz" 144;
+}
+
+/* ── Headings ─────────────────────────────────────────────────────────────── */
+
+.prose h2,
+.prose h3,
+.prose h4 {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.prose h2 {
+  font-family: var(--f-disp);
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 1.1;
+  margin: 1.8em 0 0.5em;
+  letter-spacing: -0.015em;
+  padding-top: 0.8em;
+  border-top: 1px solid var(--rule-soft);
+}
+
+.prose h2::before {
+  content: "§ ";
+  font-family: var(--f-mono);
+  font-size: 14px;
+  color: var(--ink-3);
+  vertical-align: 0.4em;
+  font-weight: 400;
+}
+
+.prose h3 {
+  font-family: var(--f-disp);
+  font-weight: 600;
+  font-size: var(--fs-2xl);
+  margin: 1.6em 0 0.4em;
+  letter-spacing: -0.01em;
+}
+
+/* ── Links ────────────────────────────────────────────────────────────────── */
+
+.prose a {
+  color: var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 1px;
+  text-decoration: none;
+  transition: all var(--dur-fast) var(--ease);
+}
+
+.prose a:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.prose a:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── Inline code ──────────────────────────────────────────────────────────── */
+
+.prose code {
+  font-family: var(--f-mono);
+  font-size: 0.86em;
+  padding: 1px 5px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule-soft);
+}
+
+/* ── Blockquote ───────────────────────────────────────────────────────────── */
+
+.prose blockquote {
+  margin: 1.6em 0;
+  padding: 6px 0 6px 24px;
+  border-left: 3px solid var(--ink);
+  font-family: var(--f-disp);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink);
+  font-size: var(--fs-2xl);
+  line-height: 1.4;
+}
+
+.prose blockquote p {
+  margin: 0;
+}
+
+.prose blockquote cite {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  margin-top: 10px;
+  font-style: normal;
+  letter-spacing: 0.04em;
+}
+
+.prose blockquote cite::before {
+  content: "— ";
+}
+
+/* ── Lists — em-dash bullets ──────────────────────────────────────────────── */
+
+.prose ul {
+  padding-left: 1.4em;
+  list-style: none;
+}
+
+.prose li {
+  margin: 0.4em 0;
+  position: relative;
+}
+
+.prose ul > li::before {
+  content: "—";
+  font-family: var(--f-mono);
+  font-weight: 500;
+  position: absolute;
+  left: -1.4em;
+  color: var(--ink);
+}
+
+/* ── Codeblock (inverted) ─────────────────────────────────────────────────── */
+
+.codeblock {
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  line-height: 1.65;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 20px 24px;
+  overflow-x: auto;
+  margin: 1.6em 0;
+  border: 1px solid var(--ink);
+}
+
+.codeblock .c {
+  color: var(--ink-5);
+  font-style: italic;
+}
+
+.codeblock .k {
+  color: var(--paper);
+  font-weight: 600;
+}
+
+.codeblock .s {
+  color: var(--ink-5);
+}
+
+/* ── Pull quote ───────────────────────────────────────────────────────────── */
+
+.pull-quote {
+  font-family: var(--f-disp);
+  font-weight: 500;
+  font-size: var(--fs-3xl);
+  line-height: 1.2;
+  color: var(--ink);
+  font-style: italic;
+  padding: 28px 0;
+  margin: 2em 0;
+  border-top: 3px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  max-width: 48ch;
+  letter-spacing: -0.01em;
+}

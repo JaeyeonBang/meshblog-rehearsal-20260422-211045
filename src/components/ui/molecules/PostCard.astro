@@ -1,0 +1,217 @@
+---
+import Badge from '../atoms/Badge.astro'
+
+interface Props {
+  kind: 'post' | 'note';
+  number: string;
+  href: string;
+  title: string;
+  excerpt?: string;
+  date?: string;
+  readingTime?: string;
+  tags?: string[];
+  thumb?: boolean;
+  featured?: boolean;
+  badge?: 'new' | 'updated' | null;
+  style?: string;
+}
+const {
+  kind,
+  number,
+  href,
+  title,
+  excerpt,
+  date,
+  readingTime,
+  tags = [],
+  thumb = false,
+  featured = false,
+  badge = null,
+  style,
+} = Astro.props;
+const meta = [date, readingTime ? `${readingTime} min` : undefined].filter(Boolean).join('  ·  ');
+---
+<a class:list={['post-card', thumb && 'with-thumb', featured && 'featured']} href={href} style={style}>
+  {thumb && (
+    <div class="thumb">
+      <span>og · {number}</span>
+    </div>
+  )}
+  <div>
+    <div class="head">
+      <span class:list={['kind-badge', kind]}>{kind} / {number}</span>
+      {badge && (
+        <Badge variant={badge}>{badge === 'new' ? 'NEW' : 'UPDATED'}</Badge>
+      )}
+      {featured && !badge && (
+        <Badge variant="featured">FEATURED</Badge>
+      )}
+      {meta && <span class="meta">{meta}</span>}
+    </div>
+    <h2 class:list={[thumb && 'sm']}>{title}</h2>
+    {excerpt && <p class="excerpt">{excerpt}</p>}
+    {tags.length > 0 && (
+      <div class="tags">
+        {tags.map(t => <span class="tag">#{t}</span>)}
+      </div>
+    )}
+  </div>
+</a>
+
+<style>
+  .post-card {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease);
+    margin: 0 -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+  .post-card:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .post-card:hover .meta {
+    color: var(--paper);
+  }
+  .post-card:hover .excerpt {
+    color: var(--paper-2);
+  }
+  .post-card:hover .tag {
+    color: var(--paper);
+    border-bottom-color: var(--paper-3);
+  }
+  .post-card:hover .kind-badge.post {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--paper);
+  }
+  .post-card:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .post-card:first-child {
+    padding-top: 0;
+  }
+  .post-card.with-thumb {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* ── Featured variant ─────────────────────────────────── */
+  .post-card.featured {
+    padding-top: var(--space-10);
+    padding-bottom: var(--space-10);
+    border-bottom: 1px solid var(--ink);
+  }
+  .post-card.featured h2 {
+    font-size: clamp(36px, 5vw, 48px);
+    font-variation-settings: "opsz" 96;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: var(--space-4);
+    max-width: 22ch;
+  }
+  .post-card.featured .excerpt {
+    font-size: var(--fs-lg);
+    max-width: 52ch;
+    line-height: 1.6;
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .kind-badge {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border: 1px solid var(--ink);
+    display: inline-block;
+    line-height: 1.6;
+  }
+  .kind-badge.post {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .kind-badge.note {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .meta {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    margin-left: auto;
+    letter-spacing: 0.04em;
+  }
+  h2 {
+    font-family: var(--f-disp);
+    font-weight: 600;
+    font-size: var(--fs-4xl);
+    line-height: 1.1;
+    margin: 0 0 12px;
+    letter-spacing: -0.015em;
+  }
+  h2.sm {
+    font-size: 24px;
+  }
+  .excerpt {
+    font-family: var(--f-serif);
+    font-size: var(--fs-md);
+    color: var(--ink-2);
+    line-height: 1.55;
+    max-width: 58ch;
+    margin: 0;
+  }
+  .tags {
+    display: flex;
+    gap: 14px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    padding: 2px 8px 3px;
+    color: var(--ink-2);
+    border-bottom: 1px solid var(--ink-5);
+    display: inline-block;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease);
+  }
+  .tag:hover {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+  .thumb {
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--ink);
+    background:
+      repeating-linear-gradient(135deg, transparent 0, transparent 5px, var(--ink-5) 5px, var(--ink-5) 6px),
+      var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--f-mono);
+    font-size: 10px;
+    color: var(--ink);
+    letter-spacing: 0.1em;
+  }
+  .thumb span {
+    background: var(--paper);
+    padding: 2px 6px;
+  }
+</style>

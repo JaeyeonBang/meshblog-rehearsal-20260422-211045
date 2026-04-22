@@ -1,0 +1,313 @@
+---
+import Base from '../layouts/Base.astro'
+import PostCard from '../components/ui/molecules/PostCard.astro'
+import NoteRow from '../components/ui/molecules/NoteRow.astro'
+import SectionBreak from '../components/ui/molecules/SectionBreak.astro'
+import TOC from '../components/ui/molecules/TOC.astro'
+import QaCard from '../components/ui/molecules/QaCard.astro'
+import MiniMesh from '../components/ui/molecules/MiniMesh.astro'
+import Button from '../components/ui/atoms/Button.astro'
+import QAChips from '../components/QAChips.tsx'
+import { listPosts, listNotes, getHomepageQa } from '../lib/pages/index.ts'
+import { withBase } from '../lib/url'
+
+const posts = listPosts().slice(0, 5)
+const notes = listNotes().slice(0, 6)
+const qa = getHomepageQa(10)
+
+const now = Date.now()
+const NEW_THRESHOLD_MS = 14 * 24 * 60 * 60 * 1000
+const ONE_MONTH = 30 * 24 * 60 * 60 * 1000
+
+function getPostBadge(post: { created_at: string; updated_at: string }): 'new' | 'updated' | null {
+  const created = new Date(post.created_at).getTime()
+  const updated = new Date(post.updated_at).getTime()
+  if (now - created <= NEW_THRESHOLD_MS) return 'new'
+  if (now - updated <= ONE_MONTH) return 'updated'
+  return null
+}
+
+function getNoteBadge(note: { created_at: string; updated_at: string }): 'new' | 'updated' | null {
+  const created = new Date(note.created_at).getTime()
+  const updated = new Date(note.updated_at).getTime()
+  if (now - created <= NEW_THRESHOLD_MS) return 'new'
+  if (now - updated <= ONE_MONTH) return 'updated'
+  return null
+}
+
+// Static concept mesh nodes for home sidebar
+const meshNodes = [
+  { label: 'knowledge', x: 36, y: 30, kind: 'hub' as const, href: withBase('/graph') },
+  { label: 'llm',       x: 70, y: 58, kind: 'hub' as const, href: withBase('/graph') },
+  { label: 'rag',       x: 70, y: 22, href: withBase('/graph?mode=concept') },
+  { label: 'astro',     x: 22, y: 62, href: withBase('/graph?mode=concept') },
+  { label: 'sqlite',    x: 48, y: 82, href: withBase('/graph?mode=concept') },
+  { label: 'faq',       x: 14, y: 24, href: withBase('/graph?mode=concept') },
+]
+const meshEdges = [
+  { from: 0, to: 2 },
+  { from: 0, to: 1 },
+  { from: 1, to: 3 },
+  { from: 1, to: 4 },
+  { from: 0, to: 5 },
+]
+---
+
+<Base
+  title="meshblog"
+  description="Personal 2nd brain — posts, notes, and an AI-powered knowledge graph."
+  ogImage="/og/index.png"
+  topBarActive="posts"
+>
+  <div class="home-layout">
+    <div class="home-main">
+      <!-- Home hero — site-specific content, stays inline -->
+      <div class="home-hero fade-up">
+        <div class="eyebrow">vault · public · 2026</div>
+        <h1>두 번째 뇌를, 남들이 읽을 수 있게 <em>내보내기</em>.</h1>
+        <p class="sub">메모를 모으고, 개념을 잇고, 혼자 읽기 아까운 생각을 공개합니다. Think of it as an Obsidian vault you can read over my shoulder.</p>
+        <p class="hero-footnote">↓ scroll · 최근 기록 {posts.length} · 조각 노트 {notes.length}</p>
+      </div>
+
+      <div class="feed stagger">
+        {posts.length > 0 ? posts.map((post, i) => (
+          <PostCard
+            kind="post"
+            number={String(i + 1).padStart(2, '0')}
+            href={withBase(`/posts/${post.slug}`)}
+            title={post.title}
+            excerpt={post.content.replace(/[#*`_~\[\]]/g, '').slice(0, 120).trimEnd()}
+            date={new Date(post.created_at).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' })}
+            tags={post.tags ?? []}
+            featured={i === 0}
+            badge={getPostBadge(post)}
+            style={`--i: ${i}`}
+          />
+        )) : (
+          <p class="feed-empty">아직 올라온 글이 없습니다 · still drafting.</p>
+        )}
+
+        <SectionBreak label="notes · atomic" count={`${notes.length} entries`} />
+
+        {notes.length > 0 ? notes.map((note, i) => (
+          <NoteRow
+            number={`N / ${String(i + 1).padStart(2, '0')}`}
+            title={note.title}
+            meta="2 min"
+            href={withBase(`/notes/${note.slug}`)}
+            badge={getNoteBadge(note)}
+          />
+        )) : (
+          <p class="feed-empty">노트 준비 중 · notes incoming.</p>
+        )}
+
+        <div class="feed-cta">
+          <Button href={withBase('/notes')}>notes 전체 보기 →</Button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="home-side">
+      <TOC label="ask the vault">
+        {qa.length > 0 ? (
+          <QAChips qas={qa} scope="global" client:idle />
+        ) : (
+          qa.map((q) => (
+            <QaCard question={q.question} answer={q.answer ?? undefined} />
+          ))
+        )}
+      </TOC>
+
+      <TOC label="concept mesh">
+        <MiniMesh nodes={meshNodes} edges={meshEdges} size="md" />
+        <p class="mesh-caption"><span class="mesh-caption__tag">Concept mesh</span> <span class="mesh-caption__body">· 자주 등장하는 개념들이 서로를 끌어당긴다</span></p>
+        <div class="mesh-cta">
+          <Button href={withBase('/graph')}>전체 그래프 →</Button>
+        </div>
+      </TOC>
+
+      <TOC label="feed">
+        <div class="feed-links">
+          <a href={withBase('/atom.xml')}>→ atom · rss</a>
+          <a href="https://github.com/jaeyeonbang">→ github</a>
+        </div>
+      </TOC>
+    </aside>
+  </div>
+</Base>
+
+<style is:global>
+  @import '../styles/motion.css';
+</style>
+
+<style>
+  /* ── Home layout ───────────────────────────────────────────── */
+  .home-layout {
+    max-width: var(--w-page);
+    margin: 0 auto;
+    padding: 0 var(--space-8) var(--space-24);
+    display: grid;
+    grid-template-columns: 1fr var(--w-side);
+    gap: 0;
+  }
+
+  @media (max-width: 980px) {
+    .home-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── Home main column ──────────────────────────────────────── */
+  .home-main {
+    padding-right: var(--space-12);
+    border-right: 1px solid var(--ink);
+    padding-bottom: var(--space-16);
+  }
+
+  @media (max-width: 980px) {
+    .home-main {
+      padding-right: 0;
+      border-right: 0;
+    }
+  }
+
+  /* ── Home hero ─────────────────────────────────────────────── */
+  .home-hero {
+    padding: var(--space-12) 0 var(--space-10);
+    border-bottom: 1px solid var(--ink);
+    margin-bottom: var(--space-12);
+  }
+
+  .home-hero .eyebrow {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .home-hero .eyebrow::before {
+    content: "";
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: var(--ink);
+  }
+
+  .home-hero h1 {
+    font-family: var(--f-disp);
+    font-weight: 500;
+    font-size: var(--fs-hero);
+    line-height: .96;
+    margin: 0 0 var(--space-6);
+    letter-spacing: -.025em;
+    max-width: 14ch;
+    font-variation-settings: "opsz" 144;
+  }
+
+  .home-hero h1 em {
+    font-style: italic;
+    font-weight: 400;
+    font-family: var(--f-disp);
+  }
+
+  .home-hero .sub {
+    font-family: var(--f-serif);
+    font-size: var(--fs-xl);
+    color: var(--ink-2);
+    line-height: 1.5;
+    max-width: 52ch;
+    font-weight: 400;
+    margin: 0;
+  }
+
+  /* ── Feed ──────────────────────────────────────────────────── */
+  .feed {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .feed-cta {
+    margin-top: var(--space-8);
+    align-self: flex-start;
+  }
+
+  /* ── Home side ─────────────────────────────────────────────── */
+  .home-side {
+    padding: var(--space-10) 0 0 var(--space-10);
+  }
+
+  @media (max-width: 980px) {
+    .home-side {
+      padding: 0;
+      border-top: 1px solid var(--ink);
+      margin-top: var(--space-10);
+      padding-top: var(--space-10);
+    }
+  }
+
+  .mesh-cta {
+    margin-top: var(--space-4);
+    width: 100%;
+  }
+
+  .feed-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .feed-links a {
+    font-family: var(--f-serif);
+    font-size: var(--fs-sm);
+    color: var(--ink-2);
+    padding: 4px 0;
+    display: block;
+    transition: color var(--dur-fast) var(--ease);
+  }
+
+  .feed-links a:hover {
+    color: var(--ink);
+  }
+
+  /* ── Mesh caption ──────────────────────────────────────────── */
+  .mesh-caption {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    color: var(--ink-3);
+    margin: var(--space-3) 0 0;
+  }
+  .mesh-caption__tag {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+  }
+  .mesh-caption__body {
+    letter-spacing: 0.02em;
+    text-transform: none;
+    font-family: var(--f-serif);
+    color: var(--ink-2);
+  }
+
+  /* ── Hero footnote ─────────────────────────────────────────── */
+  .home-hero .hero-footnote {
+    font-family: var(--f-mono);
+    font-size: var(--fs-xs);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: var(--space-6) 0 0;
+  }
+
+  /* ── Feed empty state ──────────────────────────────────────── */
+  .feed-empty {
+    font-family: var(--f-serif);
+    font-size: var(--fs-md);
+    font-style: italic;
+    color: var(--ink-3);
+    padding: var(--space-6) 0;
+  }
+</style>
